@@ -1,7 +1,7 @@
-const pathProduct = '/products'
-const pathRoot = '/'
+const productsRouter = require('./productsRoute')
+const categoriesRouter = require('./categoriesRoute')
 
 module.exports = {
-    pathRoot,
-    pathProduct
+    productsRouter,
+    categoriesRouter
 }

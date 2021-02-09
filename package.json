@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "concurrently \"node app.js\" \"node mongoDB/connection/index.js\""
+    "dev": "concurrently \"node database/connection/index.js\" \"node app.js\" "
   },
   "dependencies": {
     "concurrently": "^5.3.0",
