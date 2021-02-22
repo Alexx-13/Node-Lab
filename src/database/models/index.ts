@@ -1,7 +1,7 @@
-import Category from './categoryModel'
-import Products from './productsModel'
+import CategoryModel from './categoryModel'
+import ProductsModel from './productsModel'
 
 export {
-    Category,
-    Products
+    CategoryModel,
+    ProductsModel
 }

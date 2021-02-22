@@ -1,13 +1,24 @@
-import mongoose from 'mongoose'
+import { prop, Typegoose, ModelType, InstanceType } from 'typegoose';
+import * as mongoose from "mongoose";
 
-const ProductsSchema = new mongoose.Schema ({
-    displayName: String,
-    categoryIds: [mongoose.Schema.Types.ObjectId],
-    createdAt: Date,
-    totalRating: Number,
-    price: Number,
-}, {
-    collection: 'products'
-})
+class Product extends Typegoose {
+    @prop()
+    public displayName?: string;
+  
+    @prop()
+    public categoryIds?: [mongoose.Schema.Types.ObjectId];
+  
+    @prop()
+    public createdAt?: Date;
+  
+    @prop()
+    public totalRating?: number;
+  
+    @prop()
+    public price?: number;
+  }
+  
+  const ProductModel = new Product().getModelForClass(Product)
 
-export default mongoose.model('Product', ProductsSchema)
+  export default ProductModel
+  

@@ -1,6 +1,5 @@
 {
   "scripts": {
-    "dev": "concurrently \"node database/connection/index.js\" \"node app.js\" ",
     "start:dev": "nodemon"
   },
   "dependencies": {
@@ -10,7 +9,9 @@
     "mongodb": "^3.6.3",
     "mongoose": "^5.11.14",
     "pug": "^3.0.0",
-    "shortid": "^2.2.16"
+    "reflect-metadata": "^0.1.13",
+    "shortid": "^2.2.16",
+    "typegoose": "^5.9.1"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",

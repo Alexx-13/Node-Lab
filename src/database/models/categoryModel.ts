@@ -1,9 +1,11 @@
-import mongoose from 'mongoose'
+import { prop, Typegoose, ModelType, InstanceType } from 'typegoose';
+import * as mongoose from "mongoose";
 
-const CategorySchema = new mongoose.Schema ({
-    displayName: String
-}, {
-    collection: 'categories'
-})
+class Category extends Typegoose {
+    @prop()
+    public displayName!: String
+}
 
-export default mongoose.model('Category', CategorySchema)
+const CategoryModel = new Category().getModelForClass(Category)
+
+export default CategoryModel
