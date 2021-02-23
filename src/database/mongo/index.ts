@@ -13,11 +13,11 @@ const db: Connection = mongoose.connection
 
 
 db.on('connected', () => {
-    console.log('The DB was successfully connected')
+    console.log('The MongoDB was successfully connected')
 })
 
 db.on('disconnected', () => {
-    console.log('The DB was disconnected')
+    console.log('The MongoDB was disconnected')
 })
 
 db.on('error', (err) => {
@@ -26,7 +26,7 @@ db.on('error', (err) => {
 
 process.on('SIGINT', () => {
     db.close(() => {
-        console.log('The DB connection was closed due to process termination')
+        console.log('The MongoDB connection was closed due to process termination')
         process.exit(0)
     })
 })

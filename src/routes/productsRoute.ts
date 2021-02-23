@@ -1,6 +1,6 @@
 import express, { Request } from 'express'
 import { Response } from 'express/lib/response'
-import { CategoryModel } from '../database/models'
+import { CategoryModel } from '../database/mongo/models'
 const productRouter = express.Router()
 
 productRouter.use("/", async (request: Request, response: Response) => {

@@ -1,13 +1,19 @@
 import { Express, Server } from "express"
-import db from './database'
 import router from "./routes"
+import "reflect-metadata"
 
-const express: Express = require('express');
-const app: Server = express();
-const PORT: Number = 3000 || process.env.PORT;
+if (process.argv[2] === 'mongo'){
+  require('./database/mongo')
+} else if (process.argv[2] === 'postgres'){
+  require('./database/postgres')
+} else {
+  console.log('DB was not selected')
+}
+const express: Express = require('express')
+const app: Server = express()
+const PORT: Number = 3000 || process.env.PORT
 
 
-db
 app.use(router);
 
 app.listen(PORT, () => {
