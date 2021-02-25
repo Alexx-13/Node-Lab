@@ -1,9 +1,12 @@
 import { prop, Typegoose, ModelType, InstanceType } from 'typegoose';
-import * as mongoose from "mongoose";
+import { ICategory } from '../../interface'
 
-class Category extends Typegoose {
+class Category extends Typegoose implements ICategory{
     @prop()
-    public displayName!: String
+    public id!: number
+
+    @prop()
+    public displayName!: string
 }
 
 const CategoryModel = new Category().getModelForClass(Category)
