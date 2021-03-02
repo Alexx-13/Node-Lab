@@ -10,6 +10,7 @@
     "mongodb": "^3.6.3",
     "mongoose": "^5.11.14",
     "pg": "^8.5.1",
+    "postgres-pool": "^3.2.7",
     "pug": "^3.0.0",
     "querystring": "^0.2.1",
     "reflect-metadata": "^0.1.13",
