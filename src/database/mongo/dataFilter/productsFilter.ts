@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
+// import { ProductsModel } from '../models'
 import db from '../../../app'
 
-const dataFilter = async (request: Request, response: Response) => {
+const productsFilter = async (request: Request, response: Response): Promise<any> => {
     /* Schemas creation snippets */
     // const dataA = await ProductsModel.create({ 
     //     displayName: 'Game1',
@@ -20,114 +21,137 @@ const dataFilter = async (request: Request, response: Response) => {
     // response.send(dataA)
     // response.send(dataB)
 
-    const queryDisplayNameHandler = () => {
-        try{
-            if(request.query.displayName){
-                const queryDisplayName: string = request.query.displayName // products?displayName=Game2
-                return queryDisplayName
-            }
-        } catch(err){
-            throw new err
-        }
-    }
-
-    const queryMinRating = () => {
-        try{
-            if(request.query.minRating){
-                const queryMinRationg: number = Number(request.query.minRating) // products?displayName=Game2&minRating=1
-                return queryMinRationg
-            }
-        } catch(err){
-            throw new err
-        }
+    interface IQueryParams {
+        finalQuery: object
+        dipslayName: string
+        minRating?: object
+        price?: string
+        sortBy?: string
     }
 
 
-    let queryMinPrice: number | undefined
-    let queryMaxPrice: number | undefined
+    class QueryParams implements IQueryParams {
+        readonly requestStr = request.query
 
-    const queryPriceHandler = async () => { 
-        // products?displayName=Game2&minRating=1&price=:200
-        // products?displayName=Game2&minRating=1&price=200:
-        // products?displayName=Game2&minRating=1&price=100:200
-        try{
-            if(request.query.price){
-                let priceStr: string | number = request.query.price
-                let priceArr: Array<string> | Array<number> | undefined 
+        public finalQuery 
+        public dipslayName
+        public minRating
+        public price
+        public sortBy
+
+        getDisplayName(){
+            try{
+                this.dipslayName = this.requestStr.displayName
+            } catch(err){
+                throw new err
+            }
+        }
+
+        getMinRating(){
+            try{
+                this.minRating = parseInt(this.requestStr.minRating)
+            } catch(err){
+                throw new err
+            }
+        }
+
+        getPrice(){
+            try{
+                let priceStr: string | number = this.requestStr.price
+                let priceArr: Array<string> | Array<number> | undefined
+
+                let minPrice
+                let maxPrice
         
                 if(priceStr !== undefined){
                     priceArr = priceStr.split('')
                     if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                        queryMinPrice = parseInt(priceStr.split(':')[0])
-                        queryMaxPrice = parseInt(priceStr.split(':')[1])
+                        minPrice = parseInt(priceStr.split(':')[0])
+                        maxPrice = parseInt(priceStr.split(':')[1])
+                        this.price = { $gte : minPrice, $lte : maxPrice } 
                     } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                        queryMinPrice = parseInt(priceStr.split(':')[1])
+                        minPrice = parseInt(priceStr.split(':')[1])
+                        this.price = { $gte : minPrice }
                     } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                        queryMaxPrice = parseInt(priceStr.split(':')[0])
+                        maxPrice = parseInt(priceStr.split(':')[0])
+                        this.price = { $lte : maxPrice }
                     } else {
-                        queryMinPrice = undefined
-                        queryMaxPrice = undefined
+                        minPrice = undefined
+                        maxPrice = undefined
                     }
-                    return queryMinPrice && queryMaxPrice
+                }
+            } catch(err){  
+                throw new err
+            }
+        }
+
+        createSortByQuery(){
+            try{
+                if(this.requestStr.displayName && this.requestStr.sortBy){
+                    let sortByStr: number | string = request.query.sortBy
+                    let directionSortBy
+    
+                    if(sortByStr.split(':')[1].toLocaleLowerCase() === 'desc'){
+                        directionSortBy = 1
+                        this.sortBy = directionSortBy
+                    } else if (sortByStr.split(':')[1].toLocaleLowerCase() === 'asc'){
+                        directionSortBy = -1
+                        this.sortBy = directionSortBy
+                    }
+                }
+            } catch(err){
+                throw new err
+            }
+        }
+
+        getSortByQuery(){
+            return this.sortBy
+        }
+
+        createFinalQuery(){
+            this.finalQuery = new Object()
+            if(this.requestStr.displayName){
+                this.getDisplayName()
+                this.finalQuery.displayName = this.dipslayName
+
+                if(this.requestStr.minRating){
+                    this.getMinRating()
+                    this.finalQuery.minRating = { $gt: this.minRating }
+                }
+    
+                if(this.requestStr.price){
+                    this.getPrice()
+                    this.finalQuery.price = this.price
                 }
             }
-        } catch(err){  
-            throw new err
         }
-    }
-    queryPriceHandler()  
 
-    const query = {
-        'displayName': queryDisplayNameHandler(),
-        'minRating': { $gt : queryMinRating()},
-        'price': (queryMinPrice, queryMaxPrice) => {
-            if (queryMinPrice && queryMaxPrice){
-                return { $gte : queryMinPrice, $lte : queryMaxPrice } 
-            } else if (queryMinPrice && queryMaxPrice === undefined){
-                return { $gte : queryMinPrice }
-            } else if (queryMaxPrice && queryMinPrice === undefined){
-                return { $lte : queryMaxPrice }
-            }
+        getFinalQuery(){
+            return this.finalQuery
         }
     }
 
-    let queryFieldSortBy: any
-    let queryDirectionSortBy: number | undefined
 
-    const querySortByHandler = () => {
-        // products?displayName=Game2&minRating=1&price=100:200&sortBy=createdAt:desc
-        try{
-            if(request.query.sortBy){
-                let sortByStr: number | string = request.query.sortBy
-                queryFieldSortBy = sortByStr.split(':')[0]
 
-                if(sortByStr.split(':')[1].toLocaleLowerCase() === 'desc'){
-                    queryDirectionSortBy = 1
-                } else if (sortByStr.split(':')[1].toLocaleLowerCase() === 'asc'){
-                    queryDirectionSortBy = -1
-                }
-            }
-        } catch(err){
-            throw new err
-        }
-    }
-    querySortByHandler()
+    let queryParams = new QueryParams()
 
-    const sort = {
-        queryFieldSortBy : queryDirectionSortBy
-    }
- 
-    if(sort.queryFieldSortBy === undefined){
-        return await db.default.collection('products').find(query).toArray((err, result) => {
+    queryParams.createFinalQuery()
+    queryParams.createSortByQuery()
+
+    if(queryParams.getSortByQuery()){
+        db.default.collection('products').find(queryParams.getFinalQuery(), { projection: { _id: 0 } }).sort(queryParams.getSortByQuery()).toArray((err, result) => {
             if (err) throw err;
             console.log(result)
-        })
+            return result
+        })    
     } else {
-        return await db.default.collection('products').find(query).sort(sort).toArray((err, result) => {
+        db.default.collection('products').find(queryParams.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
             if (err) throw err;
-            console.log(result)
+            return result
         })
     }
+
+
 }
 
-export default dataFilter
+export default productsFilter
