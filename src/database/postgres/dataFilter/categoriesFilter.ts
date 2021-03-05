@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
 const categoriesFilter = async (request: Request, response: Response) => {
@@ -30,6 +31,8 @@ const categoriesFilter = async (request: Request, response: Response) => {
                     this.includeProducts = true
                 } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
                     this.includeProducts = false
+                } else {
+                    response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             } catch(err){
                 throw new err
@@ -40,6 +43,8 @@ const categoriesFilter = async (request: Request, response: Response) => {
             try{
                 if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
                     this.includeTop3Products = 3
+                } else {
+                    response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             } catch(err){
                 throw new err
@@ -62,9 +67,14 @@ const categoriesFilter = async (request: Request, response: Response) => {
         makeDBSearch(){
             this.createFinalQuery()
 
-            db.default.query(this.getFinalQuery(), (error, results) => {
-                if (error) throw error
-                return response.send(results.rows)
+            db.default.query(this.getFinalQuery(), (err, results) => {
+                if (err){
+                    throw err
+                } else if(!results.row){
+                    response.send(HTTPStatusCodes.NOT_FOUND)
+                } else {
+                    response.send(results.rows)
+                }
             })
         }
     }
