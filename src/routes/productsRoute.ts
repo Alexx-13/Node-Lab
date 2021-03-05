@@ -1,11 +1,20 @@
-import express, { Request } from 'express'
-import { Response } from 'express/lib/response'
-import { CategoryModel } from '../database/mongo/models'
+import express, { Request, Response } from 'express'
+import { ProductsModel } from '../database/mongo/models'
+import paginationHandler from '../database/mongo/pagination'
+import productsFilterMongo from '../database/mongo/dataFilter/productsFilter'
+import productsFilterPostgres from '../database/postgres/dataFilter/productsFilter'
+
 const productRouter = express.Router()
 
-productRouter.use("/", async (request: Request, response: Response) => {
-    const data = await CategoryModel.create({ displayName: 'Some text' })
-    response.send(data.displayName)
-})
+
+if (process.argv[2] === 'mongo'){
+    productRouter.use("/", paginationHandler(ProductsModel), async (request: Request, response: Response) => {
+        productsFilterMongo(request, response)
+    })
+} else if (process.argv[2] === 'postgres'){
+    productRouter.use("/", async (request: Request, response: Response) => {
+        productsFilterPostgres(request, response)
+    })
+}
 
 module.exports = productRouter
