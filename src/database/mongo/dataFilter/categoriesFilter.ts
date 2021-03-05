@@ -31,7 +31,6 @@ const categoriesFilter = async (request: Request, response: Response) => {
                         response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
                     }
                 }
-             
             } catch (err) {
                 throw new err
             }
@@ -44,9 +43,8 @@ const categoriesFilter = async (request: Request, response: Response) => {
                         this.includeTop3Products = 3
                     } else {
                         response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
-                    }
+                    } 
                 }
-               
             } catch (err) {
                 throw new err
             }
@@ -69,14 +67,24 @@ const categoriesFilter = async (request: Request, response: Response) => {
                             }
                         }
                     ]).toArray((err, result) => {
-                        if (err) response.send(HTTPStatusCodes.NOT_FOUND);
-                        return response.send(JSON.stringify(result))
+                        if (err){
+                            throw err
+                        } else if(result.length === 0){
+                            response.send(HTTPStatusCodes.NOT_FOUND);
+                        } else {
+                            return response.send(JSON.stringify(result))
+                        }
                     })
                 }   
             } else if(this.includeProducts === undefined){
                 db.default.collection(this.collectionName).find({}).toArray((err, result) => {
-                    if (err) response.send(HTTPStatusCodes.NOT_FOUND);
-                    return response.send(JSON.stringify(result))
+                    if (err){
+                        throw err
+                    } else if(result.length === 0){
+                        response.send(HTTPStatusCodes.NOT_FOUND);
+                    } else {
+                        return response.send(JSON.stringify(result))
+                    }
                 })
             }
         }
@@ -88,3 +96,4 @@ const categoriesFilter = async (request: Request, response: Response) => {
 }
 
 export default categoriesFilter
+
