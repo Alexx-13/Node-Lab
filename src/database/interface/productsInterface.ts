@@ -3,7 +3,7 @@ interface IProducts {
     categoryIds: string
     displayName: string
     createdAt: Date
-    minRating: number
+    totalRating: number
     price: number
 }
 

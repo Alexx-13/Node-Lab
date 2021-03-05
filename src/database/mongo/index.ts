@@ -31,6 +31,4 @@ process.on('SIGINT', () => {
     })
 })
 
-
-
 export default db

@@ -1,17 +1,9 @@
-import express, { Request, Response } from 'express'
-import categoriesFilterMongo from '../database/mongo/dataFilter/categoriesFilter'
-import categoriesFilterPostgres from '../database/postgres/dataFilter/categoriesFilter'
+import express, { Response } from 'express'
+import { Request } from 'express/lib/request';
 const categoriesRouter = express.Router();
-
-
-if(process.argv[2] === 'mongo'){
-    categoriesRouter.use("/", (request: Request, response: Response) => {
-        categoriesFilterMongo(request, response)
-    })
-} else if (process.argv[2] === 'postgres'){
-    categoriesRouter.use("/", (request: Request, response: Response) => {
-        categoriesFilterPostgres(request, response)
-    })
-}
+ 
+categoriesRouter.use("/", (request: Request, response: Response) => {
+    response.send("Some data for categories")
+})
 
 module.exports = categoriesRouter

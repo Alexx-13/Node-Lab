@@ -16,7 +16,7 @@ export class Products implements IProducts {
   createdAt!: Date;
 
   @Column()
-  minRating!: number;
+  totalRating!: number;
 
   @Column()
   price!: number;
