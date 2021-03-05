@@ -14,4 +14,4 @@ if(process.argv[2] === 'mongo'){
     })
 }
 
-module.exports = categoriesRouter
+export default categoriesRouter

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
-import { CategoryModel } from '../models/index'
+import { HTTPStatusCodes } from '../../../httpStatus'
+// import { CategoryModel } from '../models/index'
 import db from '../../../app'
 
 const categoriesFilter = async (request: Request, response: Response) => {
@@ -15,16 +16,22 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
     class QueryParams implements IQueryParams {
         readonly requestStr = request.query
+        readonly collectionName = 'categories'
         public includeProducts
         public includeTop3Products
 
         getIncludeProducts(){
             try {
-                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
-                    this.includeProducts = true
-                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
-                    this.includeProducts = false
+                if(this.requestStr.includeProducts){
+                    if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
+                        this.includeProducts = true
+                    } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
+                        this.includeProducts = false
+                    } else {
+                        response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 }
+             
             } catch (err) {
                 throw new err
             }
@@ -32,9 +39,14 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
         getIncludeTop3Products(){
             try {
-                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
-                    this.includeTop3Products = 3
+                if(this.requestStr.includeTop3Products){
+                    if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
+                        this.includeTop3Products = 3
+                    } else {
+                        response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 }
+               
             } catch (err) {
                 throw new err
             }
@@ -42,10 +54,11 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
         makeDBSearch(){
             this.getIncludeProducts()
-            if(this.includeProducts){
+        
+            if(this.includeProducts === false || this.includeProducts === true){
                 this.getIncludeTop3Products()
                 if(this.includeProducts === true && this.includeTop3Products === 3){
-                    db.default.collection("categories").aggregate([
+                    db.default.collection(this.collectionName).aggregate([
                         {
                             $lookup:
                             {
@@ -55,11 +68,16 @@ const categoriesFilter = async (request: Request, response: Response) => {
                                 as: 'products'
                             }
                         }
-                    ]).toArray(function(err, result) {
-                        if (err) throw err;
+                    ]).toArray((err, result) => {
+                        if (err) response.send(HTTPStatusCodes.NOT_FOUND);
                         return response.send(JSON.stringify(result))
                     })
                 }   
+            } else if(this.includeProducts === undefined){
+                db.default.collection(this.collectionName).find({}).toArray((err, result) => {
+                    if (err) response.send(HTTPStatusCodes.NOT_FOUND);
+                    return response.send(JSON.stringify(result))
+                })
             }
         }
 

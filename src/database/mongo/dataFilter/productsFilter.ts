@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 // import { ProductsModel } from '../models'
 import db from '../../../app'
 
@@ -34,6 +35,7 @@ const productsFilter = async (request: Request, response: Response): Promise<any
         readonly requestStr = request.query
         readonly collectionName = 'products'
         public finalQuery 
+        public checkObj
         public dipslayName
         public minRating
         public price
@@ -43,41 +45,59 @@ const productsFilter = async (request: Request, response: Response): Promise<any
             try{
                 this.dipslayName = this.requestStr.displayName
             } catch(err){
+                response.send(HTTPStatusCodes.BAD_REQUEST)
                 throw new err
             }
         }
 
         getMinRating(){
             try{
-                this.minRating = parseInt(this.requestStr.minRating)
+                if(parseInt(this.requestStr.minRating)){
+                    this.minRating = parseInt(this.requestStr.minRating)
+                } else {
+                    response.send(HTTPStatusCodes.BAD_REQUEST)
+                }
+                
             } catch(err){
+                response.send(HTTPStatusCodes.BAD_REQUEST)
                 throw new err
             }
         }
 
         getPrice(){
             try{
-                let priceStr: string | number = this.requestStr.price
+                let priceStr: string = this.requestStr.price
                 let priceArr: Array<string> | Array<number> | undefined
 
                 let minPrice
                 let maxPrice
         
-                if(priceStr !== undefined){
+                if(priceStr){
                     priceArr = priceStr.split('')
                     if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                        minPrice = parseInt(priceStr.split(':')[0])
-                        maxPrice = parseInt(priceStr.split(':')[1])
-                        this.price = { $gte : minPrice, $lte : maxPrice } 
+                        if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
+                            minPrice = parseInt(priceStr.split(':')[0])
+                            maxPrice = parseInt(priceStr.split(':')[1])
+                            this.price = { $gte : minPrice, $lte : maxPrice } 
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                        minPrice = parseInt(priceStr.split(':')[1])
-                        this.price = { $gte : minPrice }
+                        if( parseInt(priceStr.split(':')[1])){
+                            minPrice = parseInt(priceStr.split(':')[1])
+                            this.price = { $gte : minPrice }
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                        maxPrice = parseInt(priceStr.split(':')[0])
-                        this.price = { $lte : maxPrice }
+                        if(parseInt(priceStr.split(':')[0])){
+                            maxPrice = parseInt(priceStr.split(':')[0])
+                            this.price = { $lte : maxPrice }
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else {
-                        minPrice = undefined
-                        maxPrice = undefined
+                        response.send(HTTPStatusCodes.BAD_REQUEST)
                     }
                 }
             } catch(err){  
@@ -87,7 +107,7 @@ const productsFilter = async (request: Request, response: Response): Promise<any
 
         createSortByQuery(){
             try{
-                if(this.requestStr.displayName && this.requestStr.sortBy){
+                if(this.requestStr.sortBy){
                     let sortByStr: number | string = request.query.sortBy
                     let directionSortBy
     
@@ -97,6 +117,8 @@ const productsFilter = async (request: Request, response: Response): Promise<any
                     } else if (sortByStr.split(':')[1].toLocaleLowerCase() === 'asc'){
                         directionSortBy = -1
                         this.sortBy = directionSortBy
+                    } else {
+                        response.send(HTTPStatusCodes.BAD_REQUEST)
                     }
                 }
             } catch(err){
@@ -110,6 +132,7 @@ const productsFilter = async (request: Request, response: Response): Promise<any
 
         createFinalQuery(){
             this.finalQuery = new Object()
+
             if(this.requestStr.displayName){
                 this.getDisplayName()
                 this.finalQuery.displayName = this.dipslayName
@@ -136,13 +159,23 @@ const productsFilter = async (request: Request, response: Response): Promise<any
 
             if(this.getSortByQuery()){
                 db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, result) => {
-                    if (err) throw err;
-                    return response.send(result)
+                    if (err){
+                        throw err;
+                    } else if(result.length === 0){
+                        response.send(HTTPStatusCodes.NOT_FOUND)
+                    } else {
+                        response.send(result)
+                    }
                 })    
             } else {
                 db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
-                    if (err) throw err;
-                    return response.send(result)
+                    if (err){
+                        throw err;
+                    } else if(result.length === 0){
+                        response.send(HTTPStatusCodes.NOT_FOUND)
+                    } else {
+                        response.send(result)
+                    }
                 })
             }
 

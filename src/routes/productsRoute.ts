@@ -17,4 +17,4 @@ if (process.argv[2] === 'mongo'){
     })
 }
 
-module.exports = productRouter
+export default productRouter
