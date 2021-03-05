@@ -1,4 +1,5 @@
 import { Express, Server } from "express"
+import logger from './logs'
 import router from "./routes"
 import "reflect-metadata"
 
@@ -16,7 +17,7 @@ const express: Express = require('express')
 const app: Server = express()
 const PORT: Number | String = 3000 || process.env.PORT
 
-
+app.use(logger)
 app.use(router);
 
 app.listen(PORT, () => {

@@ -1,4 +1,6 @@
+import { Logger } from "mongodb";
 import { Connection, Mongoose } from "mongoose"
+const fs = require("fs");
 
 const mongoose: Mongoose = require('mongoose')
 const PASSWORD = require('dotenv').config().parsed.MONGO_DB_PASSWORD
@@ -9,11 +11,24 @@ mongoose.connect(
     `mongodb+srv://Alexx:${PASSWORD}@cluster0.l1zle.mongodb.net/${DBNAME}?retryWrites=true&w=majority`, 
     {useNewUrlParser: true, useUnifiedTopology: true}
 )
+
 const db: Connection = mongoose.connection
 
 
 db.on('connected', () => {
     console.log('The MongoDB was successfully connected')
+
+    if(process.env.NODE_ENV === 'production') {
+        Logger.setLevel("debug");
+        
+        Logger.setCurrentLogger((context: any) => {
+            fs.appendFile('./src/logs/logs.txt', JSON.stringify(context) + "\n", err => {
+                if (err) {
+                console.log(err);
+                }
+            })
+        })
+    } 
 })
 
 db.on('disconnected', () => {
