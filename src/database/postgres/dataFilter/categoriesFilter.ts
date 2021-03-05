@@ -10,7 +10,6 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
     class QueryParams implements IQueryParams {
         readonly requestStr = request.query
-        readonly paginationCondition: string = `AND id > 20 LIMIT 20`
 
         public finalQuery: string = `SELECT * FROM categories`
         public id
@@ -27,7 +26,11 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
         getIncludeProducts(){
             try{
-                this.includeProducts = this.requestStr.inculdeProducts
+                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
+                    this.includeProducts = true
+                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
+                    this.includeProducts = false
+                }
             } catch(err){
                 throw new err
             }
@@ -35,7 +38,9 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
         getIncludeTop3Products(){
             try{
-                this.includeTop3Products = this.requestStr.includeTop3Products
+                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
+                    this.includeTop3Products = 3
+                }
             } catch(err){
                 throw new err
             }
@@ -43,12 +48,30 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
         createFinalQuery(){
             this.getIncludeProducts()
-            if(this.includeProducts){
-                this.finalQuery = `${this.finalQuery} `
+            this.getIncludeTop3Products()
+            
+            if(this.includeProducts, this.includeTop3Products){
+                this.finalQuery = `${this.finalQuery} INNER JOIN products ON categories.displayName = products.displayName`
             }
+        }
+
+        getFinalQuery(){
+            return this.finalQuery
+        }
+
+        makeDBSearch(){
+            this.createFinalQuery()
+
+            db.default.query(this.getFinalQuery(), (error, results) => {
+                if (error) throw error
+                return response.send(results.rows)
+            })
         }
     }
 
     let queryParams = new QueryParams()
-    console.log()
+    queryParams.makeDBSearch()
+    
 }
+
+export default categoriesFilter

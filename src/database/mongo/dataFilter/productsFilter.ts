@@ -32,7 +32,7 @@ const productsFilter = async (request: Request, response: Response): Promise<any
 
     class QueryParams implements IQueryParams {
         readonly requestStr = request.query
-
+        readonly collectionName = 'products'
         public finalQuery 
         public dipslayName
         public minRating
@@ -129,28 +129,30 @@ const productsFilter = async (request: Request, response: Response): Promise<any
         getFinalQuery(){
             return this.finalQuery
         }
-    }
 
+        makeDBSearch(){
+            this.createFinalQuery()
+            this.createSortByQuery()
+
+            if(this.getSortByQuery()){
+                db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, result) => {
+                    if (err) throw err;
+                    return response.send(result)
+                })    
+            } else {
+                db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
+                    if (err) throw err;
+                    return response.send(result)
+                })
+            }
+
+        }
+        
+    }
 
 
     let queryParams = new QueryParams()
-
-    queryParams.createFinalQuery()
-    queryParams.createSortByQuery()
-
-    if(queryParams.getSortByQuery()){
-        db.default.collection('products').find(queryParams.getFinalQuery(), { projection: { _id: 0 } }).sort(queryParams.getSortByQuery()).toArray((err, result) => {
-            if (err) throw err;
-            console.log(result)
-            return result
-        })    
-    } else {
-        db.default.collection('products').find(queryParams.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
-            if (err) throw err;
-            return result
-        })
-    }
-
+    queryParams.makeDBSearch()
 
 }
 

@@ -2,10 +2,6 @@ import { Request, Response } from 'express'
 import db from '../../../app'
 
 const dataFilter = async (request: Request, response: Response) => {
-    const createIndex = `
-    CREATE UNIQUE INDEX _id on products (id)
-    `;
-
     interface IQueryParams {
         finalQuery: string
         dipslayName: string
@@ -17,6 +13,7 @@ const dataFilter = async (request: Request, response: Response) => {
     class QueryParams implements IQueryParams {
         readonly requestStr = request.query
         readonly paginationCondition: string = `AND id > 20 LIMIT 20`
+        readonly customIndex = `CREATE INDEX idx_displayName on products(displayName)`
 
         public finalQuery: string = `SELECT * FROM products`
         public dipslayName
@@ -110,20 +107,22 @@ const dataFilter = async (request: Request, response: Response) => {
         }
 
         getFinalQuery(){
-            return this.finalQuery
+            return this.customIndex + this.finalQuery
+        }
+
+        makeDBSearch(){
+            this.createFinalQuery()
+
+            db.default.query(this.getFinalQuery(), (error, results) => {
+                if (error) throw error
+                return response.send(results.rows)
+            })
         }
     }
 
     let queryParams = new QueryParams()
-    queryParams.createFinalQuery()
-
-    db.default.query(queryParams.getFinalQuery(), (error, results) => {
-        if (error) {
-            throw error
-        }
-        console.log(results.rows)
-        return results.rows
-    })
+    queryParams.makeDBSearch()
+    
 }
 
 export default dataFilter

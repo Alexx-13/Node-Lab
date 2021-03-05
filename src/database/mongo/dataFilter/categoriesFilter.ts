@@ -15,7 +15,6 @@ const categoriesFilter = async (request: Request, response: Response) => {
 
     class QueryParams implements IQueryParams {
         readonly requestStr = request.query
-        public finalQuery
         public includeProducts
         public includeTop3Products
 
@@ -41,8 +40,7 @@ const categoriesFilter = async (request: Request, response: Response) => {
             }
         }
 
-        createFinalQuery(){
-            this.finalQuery = new Object()
+        makeDBSearch(){
             this.getIncludeProducts()
             if(this.includeProducts){
                 this.getIncludeTop3Products()
@@ -59,7 +57,7 @@ const categoriesFilter = async (request: Request, response: Response) => {
                         }
                     ]).toArray(function(err, result) {
                         if (err) throw err;
-                        console.log(JSON.stringify(result))
+                        return response.send(JSON.stringify(result))
                     })
                 }   
             }
@@ -68,9 +66,7 @@ const categoriesFilter = async (request: Request, response: Response) => {
     }
 
     let queryParams = new QueryParams()
-    console.log(queryParams.createFinalQuery())
-
-
+    queryParams.makeDBSearch()
 }
 
 export default categoriesFilter
