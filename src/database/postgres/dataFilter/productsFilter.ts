@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
 const dataFilter = async (request: Request, response: Response) => {
@@ -31,7 +32,11 @@ const dataFilter = async (request: Request, response: Response) => {
 
         getMinRating(){
             try{
-                this.minRating = this.requestStr.minRating
+                if(parseInt(this.requestStr.minRating)){
+                    this.minRating = parseInt(this.requestStr.minRating)
+                } else {
+                    response.send(HTTPStatusCodes.BAD_REQUEST)
+                }
             } catch(err){
                 throw new err
             }
@@ -45,21 +50,33 @@ const dataFilter = async (request: Request, response: Response) => {
                 let minPrice
                 let maxPrice
 
-                if(priceStr !== undefined){
+                if(priceStr){
                     priceArr = priceStr.split('')
+                    
                     if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                        minPrice = priceStr.split(':')[0]
-                        maxPrice = priceStr.split(':')[1]
-                        this.price = `price <= ${maxPrice} AND price >= ${minPrice}`
+                        if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
+                            minPrice = priceStr.split(':')[0]
+                            maxPrice = priceStr.split(':')[1]
+                            this.price = `price <= ${maxPrice} AND price >= ${minPrice}`
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                        minPrice = priceStr.split(':')[1]
-                        this.price = `price >= ${minPrice}`
+                        if(parseInt(priceStr.split(':')[1])){
+                            minPrice = priceStr.split(':')[1]
+                            this.price = `price >= ${minPrice}`
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                        maxPrice = priceStr.split(':')[0]
-                        this.price = `price <= ${maxPrice}`
+                        if(parseInt(priceStr.split(':')[0])){
+                            maxPrice = priceStr.split(':')[0]
+                            this.price = `price <= ${maxPrice}`
+                        } else {
+                            response.send(HTTPStatusCodes.BAD_REQUEST)
+                        }
                     } else {
-                        minPrice = undefined
-                        maxPrice = undefined
+                        response.send(HTTPStatusCodes.BAD_REQUEST)
                     }
                 }
             } catch(err){
@@ -78,6 +95,8 @@ const dataFilter = async (request: Request, response: Response) => {
                     this.sortBy = `ORDER BY ${queryField} DESC`
                 } else if (querySortBy === 'asc'){
                     this.sortBy = `ORDER BY ${queryField} ASC`
+                } else {
+                    response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             } catch(err){
                 throw new err
@@ -113,9 +132,14 @@ const dataFilter = async (request: Request, response: Response) => {
         makeDBSearch(){
             this.createFinalQuery()
 
-            db.default.query(this.getFinalQuery(), (error, results) => {
-                if (error) throw error
-                return response.send(results.rows)
+            db.default.query(this.getFinalQuery(), (err, results) => {
+                if (err){
+                    throw err
+                } else if (!results.row){
+                    response.send(HTTPStatusCodes.NOT_FOUND)
+                } else {
+                    response.send(results.rows)
+                }
             })
         }
     }

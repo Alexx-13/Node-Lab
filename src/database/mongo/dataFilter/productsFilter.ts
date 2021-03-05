@@ -45,7 +45,6 @@ const productsFilter = async (request: Request, response: Response): Promise<any
             try{
                 this.dipslayName = this.requestStr.displayName
             } catch(err){
-                response.send(HTTPStatusCodes.BAD_REQUEST)
                 throw new err
             }
         }
@@ -59,7 +58,6 @@ const productsFilter = async (request: Request, response: Response): Promise<any
                 }
                 
             } catch(err){
-                response.send(HTTPStatusCodes.BAD_REQUEST)
                 throw new err
             }
         }
