@@ -1,51 +1,64 @@
 import { Request, Response } from 'express'
-import { CategoryModel } from '../models/index'
 import db from '../../../app'
 
-const categoriesFilter = async (request: Request, response: Response) => {
-    /* Schemas creation snippets */
-    // const dataA = await CategoryModel.create({ 
-    //     displayName: 'Game1'
-    // })
+interface ICategoriesFilterMongo {
+    request: Request
+    response: Response
+    includeProducts?: boolean | undefined
+    includeTop3Products?: number | undefined
+    requestStr: { [queryParam: string]: string }
+    collectionName: string
+}
 
-    interface IQueryParams {
-        includeProducts?: boolean
-        includeTop3Products?: number
+export default class CategoriesFilterMongo implements ICategoriesFilterMongo {
+    readonly request: Request
+    readonly response: Response
+    public includeProducts: boolean | undefined
+    public includeTop3Products: number | undefined
+    public requestStr: { [queryParam: string]: string }
+    public collectionName: string = 'categories'
+    
+    constructor(request, response){
+        this.request = request
+        this.response = response
+        this.requestStr = request.query
+    }       
+
+    getIncludeProducts(){
+        try {
+            if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
+                this.includeProducts = true
+            } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
+                this.includeProducts = false
+            }
+        } catch (err) {
+            throw new err
+        }
     }
 
-    class QueryParams implements IQueryParams {
-        readonly requestStr = request.query
-        public includeProducts
-        public includeTop3Products
-
-        getIncludeProducts(){
-            try {
-                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
-                    this.includeProducts = true
-                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
-                    this.includeProducts = false
-                }
-            } catch (err) {
-                throw new err
+    getIncludeTop3Products(){
+        try {
+            if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
+                this.includeTop3Products = 3
             }
+        } catch (err) {
+            throw new err
         }
+    }
 
-        getIncludeTop3Products(){
-            try {
-                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
-                    this.includeTop3Products = 3
-                }
-            } catch (err) {
-                throw new err
-            }
-        }
-
-        makeDBSearch(){
+    makeDBSearch(){
+        if(Object.keys(this.requestStr).length === 0){
+            db.default.collection(this.collectionName).find({}).toArray((err, result) => {
+                if (err) throw err
+                return this.response.send(JSON.stringify(result))
+            })
+        } else {
             this.getIncludeProducts()
+
             if(this.includeProducts){
                 this.getIncludeTop3Products()
                 if(this.includeProducts === true && this.includeTop3Products === 3){
-                    db.default.collection("categories").aggregate([
+                    db.default.collection(this.collectionName).aggregate([
                         {
                             $lookup:
                             {
@@ -55,18 +68,13 @@ const categoriesFilter = async (request: Request, response: Response) => {
                                 as: 'products'
                             }
                         }
-                    ]).toArray(function(err, result) {
-                        if (err) throw err;
-                        return response.send(JSON.stringify(result))
+                    ]).toArray((err, result) => {
+                        if (err) throw err
+                        return this.response.send(JSON.stringify(result))
                     })
                 }   
             }
         }
 
     }
-
-    let queryParams = new QueryParams()
-    queryParams.makeDBSearch()
 }
-
-export default categoriesFilter
