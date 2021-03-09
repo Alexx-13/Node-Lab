@@ -1,16 +1,17 @@
 import express, { Request, Response } from 'express'
+import RegisterFilterMongo from '../../database/mongo/dataFilter/registerFilter'
 const bodyParser = require('body-parser');
 
 const registerRouter = express.Router()
 
-registerRouter.use(bodyParser)
+registerRouter.use(
+    express.static(process.cwd() + '/src/client/register.html'),
+    bodyParser.urlencoded({ extended: false })
+)
 
-registerRouter.get("/",(request: Request, response: Response) => {
-    response.sendFile(process.cwd() + '/src/client/register.html')
-})
-
-registerRouter.post("/", (request, response: Response) => {
-    console.log(request.body)
+registerRouter.use("/", async (request, response: Response) => {
+    let registerFilter = new RegisterFilterMongo(request, response)
+    registerFilter.setAccountCollection()
 })
 
 export default registerRouter
