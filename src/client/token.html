@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Token</title>
 </head>
 <body>
-    <form action="http://localhost:3000/register" method="POST">
-        <label for="user_name">Enter name: </label>
+    <form action="http://localhost:3000/token" method="POST">
+        <label for="user_name">Your name </label>
         <input id="user_name" type="text" name="user_field" placeholder="Your name">
-        <label for="user_password">Enter password: </label>
-        <input id="user_password" type="password" name="user_password">
+        <label for="user_refresh_token">Your refresh token: </label>
+        <input id="user_refresh_token" type="text" name="user_refresh_token" placeholder="Your refresh token">
         <input type="submit" value="OK">
     </form>
 </body>

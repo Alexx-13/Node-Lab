@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt")
 import db from '../../../app'
 
 
@@ -84,8 +84,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     getFinalQuery() {
         try{
-            this.setFinalQuery()
-            console.log(this.setFinalQuery())
+            return this.setFinalQuery()
         } catch(err){
             throw new err
         }
@@ -98,12 +97,11 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                 if(err){
                     throw new err
                 } else {
-                    // console.log(result)
+                    this.response.send('Account was successfully created')
                 }
             })
         } catch(err){
             throw new err
         }
     }
-
 }
