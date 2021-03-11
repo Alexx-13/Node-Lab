@@ -1,5 +1,4 @@
-import { Request, Response } from 'express'
-const jwt = require('jsonwebtoken')
+import { Response } from 'express'
 import db from '../../../app'
 
 interface IAuthenticateFilterMongo {
@@ -11,8 +10,9 @@ interface IAuthenticateFilterMongo {
 
     getUserName()
     getUserUnhashedPassword()
+    setFinalQuery()
     getFinalQuery()
-    handleJWTToken()
+    getToken()
 }
 
 export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo {
@@ -47,7 +47,7 @@ export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo
         }
     }
 
-    getFinalQuery() {
+    setFinalQuery(){
         try{
             return this.finalQuery = {
                 user_name: this.getUserName(),
@@ -58,7 +58,15 @@ export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo
         }
     }
 
-    handleJWTToken() {
+    getFinalQuery() {
+        try{
+            return this.setFinalQuery()
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getToken() {
         try {
             const { user_name, user_password } = this.getFinalQuery()
 
@@ -68,10 +76,7 @@ export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo
                 } else if (result.length === 0){
                     this.response.send('Username or password incorrect')
                 } else {
-                    const accessToken = jwt.sign({ user_name: user_name }, require('dotenv').config().parsed.ACCESS_TOKEN_SECRET, { expiresIn: '20m' })
-                    this.response.json({
-                        accessToken
-                    })
+                    this.response.send(result[0].user_access_token)
                 }
             })
         } catch (err) {

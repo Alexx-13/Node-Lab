@@ -10,7 +10,7 @@ authenticateRouter.use(
 
 authenticateRouter.use("/", async (request: Request, response: Response) => {
     let authenticateFilter = new AuthenticateFilterMongo(request, response)
-    authenticateFilter.handleJWTToken()
+    authenticateFilter.getToken()
 })
 
 export default authenticateRouter
