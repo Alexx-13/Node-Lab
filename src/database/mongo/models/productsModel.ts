@@ -15,13 +15,12 @@ class Product extends Typegoose implements IProducts {
     public createdAt!: Date
   
     @prop()
-    public totalRating!: number
+    public minRating!: number
   
     @prop()
     public price!: number
-  }
+}
   
-  const ProductModel = new Product().getModelForClass(Product)
+const ProductModel = new Product().getModelForClass(Product)
 
-  export default ProductModel
-  
+export default ProductModel
