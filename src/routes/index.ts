@@ -1,7 +1,7 @@
 import express from 'express'
 import { Router } from "express";
-const productsRouter = require('./productsRoute')
-const categoriesRouter = require('./categoriesRoute')
+import productsRouter from './productsRoute';
+import categoriesRouter from './categoriesRoute'
 const router: Router = express.Router()
 
 router.use("/products", productsRouter)

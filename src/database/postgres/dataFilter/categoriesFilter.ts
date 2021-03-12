@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
 interface ICategoriesFilterPostgres {
@@ -28,6 +29,7 @@ export default class CategoriesFilterPostgres implements ICategoriesFilterPostgr
         this.requestStr = request.query
     }      
 
+
     getId(){
         try{
             this.id = this.requestStr.id
@@ -42,6 +44,8 @@ export default class CategoriesFilterPostgres implements ICategoriesFilterPostgr
                 this.includeProducts = true
             } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
                 this.includeProducts = false
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
         } catch(err){
             throw new err
@@ -52,10 +56,14 @@ export default class CategoriesFilterPostgres implements ICategoriesFilterPostgr
         try{
             if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
                 this.includeTop3Products = 3
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
         } catch(err){
             throw new err
         }
+    } catch(err){
+        throw new err
     }
 
     createFinalQuery(){
@@ -74,9 +82,15 @@ export default class CategoriesFilterPostgres implements ICategoriesFilterPostgr
     makeDBSearch(){
         this.createFinalQuery()
 
-        db.default.query(this.getFinalQuery(), (error, results) => {
-            if (error) throw error
-            return this.response.send(results.rows)
+        db.default.query(this.getFinalQuery(), (err, results) => {
+            if (err){
+                throw err
+            } else if(!results.row){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                this.response.send(results.rows)
+            }
         })
     }
+
 }

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
 interface IProductsFilterPostgres {
@@ -44,7 +45,11 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
 
     getMinRating(){
         try{
-            this.minRating = this.requestStr.minRating
+            if(parseInt(this.requestStr.minRating)){
+                this.minRating = parseInt(this.requestStr.minRating)
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
         } catch(err){
             throw new err
         }
@@ -58,27 +63,38 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
             let minPrice
             let maxPrice
 
-            if(priceStr !== undefined){
+            if(priceStr){
                 priceArr = priceStr.split('')
+                
                 if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                    minPrice = priceStr.split(':')[0]
-                    maxPrice = priceStr.split(':')[1]
-                    this.price = `price <= ${maxPrice} AND price >= ${minPrice}`
+                    if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
+                        minPrice = priceStr.split(':')[0]
+                        maxPrice = priceStr.split(':')[1]
+                        this.price = `price <= ${maxPrice} AND price >= ${minPrice}`
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                    minPrice = priceStr.split(':')[1]
-                    this.price = `price >= ${minPrice}`
+                    if(parseInt(priceStr.split(':')[1])){
+                        minPrice = priceStr.split(':')[1]
+                        this.price = `price >= ${minPrice}`
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                    maxPrice = priceStr.split(':')[0]
-                    this.price = `price <= ${maxPrice}`
+                    if(parseInt(priceStr.split(':')[0])){
+                        maxPrice = priceStr.split(':')[0]
+                        this.price = `price <= ${maxPrice}`
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else {
-                    minPrice = undefined
-                    maxPrice = undefined
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             }
         } catch(err){
             throw new err
         }
-            
     }
 
     getSortBy(){
@@ -91,6 +107,8 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
                 this.sortBy = `ORDER BY ${queryField} DESC`
             } else if (querySortBy === 'asc'){
                 this.sortBy = `ORDER BY ${queryField} ASC`
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
         } catch(err){
             throw new err
@@ -119,16 +137,22 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
         }
     }
 
+    makeDBSearch(){
+        this.createFinalQuery()
+
+        db.default.query(this.getFinalQuery(), (err, results) => {
+            if (err){
+                throw err
+            } else if (!results.row){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                this.response.send(results.rows)
+            }
+        })
+    }
+
     getFinalQuery(){
         return this.customIndex + this.finalQuery
     }
 
-    makeDBSearch(){
-        this.createFinalQuery()
-
-        db.default.query(this.getFinalQuery(), (error, results) => {
-            if (error) throw error
-            return this.response.send(results.rows)
-        })
-    }
 }

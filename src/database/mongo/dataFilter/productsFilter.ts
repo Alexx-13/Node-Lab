@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
 interface IProductsFilterMongo {
@@ -40,7 +41,12 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
 
     getMinRating(){
         try{
-            this.minRating = parseInt(this.requestStr.minRating)
+            if(parseInt(this.requestStr.minRating)){
+                this.minRating = parseInt(this.requestStr.minRating)
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+            
         } catch(err){
             throw new err
         }
@@ -48,27 +54,38 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
 
     getPrice(){
         try{
-            let priceStr: string | number = this.requestStr.price
+            let priceStr: string = this.requestStr.price
             let priceArr: Array<string> | Array<number> | undefined
 
             let minPrice
             let maxPrice
     
-            if(priceStr !== undefined){
+            if(priceStr){
                 priceArr = priceStr.split('')
                 if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                    minPrice = parseInt(priceStr.split(':')[0])
-                    maxPrice = parseInt(priceStr.split(':')[1])
-                    this.price = { $gte : minPrice, $lte : maxPrice } 
+                    if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
+                        minPrice = parseInt(priceStr.split(':')[0])
+                        maxPrice = parseInt(priceStr.split(':')[1])
+                        this.price = { $gte : minPrice, $lte : maxPrice } 
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                    minPrice = parseInt(priceStr.split(':')[1])
-                    this.price = { $gte : minPrice }
+                    if( parseInt(priceStr.split(':')[1])){
+                        minPrice = parseInt(priceStr.split(':')[1])
+                        this.price = { $gte : minPrice }
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                    maxPrice = parseInt(priceStr.split(':')[0])
-                    this.price = { $lte : maxPrice }
+                    if(parseInt(priceStr.split(':')[0])){
+                        maxPrice = parseInt(priceStr.split(':')[0])
+                        this.price = { $lte : maxPrice }
+                    } else {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    }
                 } else {
-                    minPrice = undefined
-                    maxPrice = undefined
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             }
         } catch(err){  
@@ -78,8 +95,8 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
 
     createSortByQuery(){
         try{
-            if(this.requestStr.displayName && this.requestStr.sortBy){
-                let sortByStr: number | object | string = this.request.query.sortBy
+            if(this.requestStr.sortBy){
+                let sortByStr: number | string = this.request.query.sortBy
                 let directionSortBy
 
                 if(sortByStr.split(':')[1].toLocaleLowerCase() === 'desc'){
@@ -88,12 +105,14 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
                 } else if (sortByStr.split(':')[1].toLocaleLowerCase() === 'asc'){
                     directionSortBy = -1
                     this.sortBy = directionSortBy
+                } else {
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 }
             }
-        } catch(err){
+        } catch(err){  
             throw new err
         }
-    }
+    } 
 
     getSortByQuery(){
         return this.sortBy
@@ -128,14 +147,24 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
 
         if(this.getSortByQuery()){
             db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, result) => {
-                if (err) throw err;
-                return this.response.send(result)
+                if (err){
+                    throw err;
+                } else if(result.length === 0){
+                    this.response.send(HTTPStatusCodes.NOT_FOUND)
+                } else {
+                    this.response.send(result)
+                }
             })    
         } else {
             db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
-                if (err) throw err;
-                return this.response.send(result)
+                if (err){
+                    throw err;
+                } else if(result.length === 0){
+                    this.response.send(HTTPStatusCodes.NOT_FOUND)
+                } else {
+                    this.response.send(result)
+                }
             })
-        }
+        }  
     }
 }
