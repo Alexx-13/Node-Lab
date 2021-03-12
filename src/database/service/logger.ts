@@ -31,12 +31,28 @@ const logger = (request, response, next) => {
     let log = `[${formatted_date}] ${method}:${url} ${status} ${durationInMilliseconds.toLocaleString()} ms`
     console.log(log)
 
-    fs.appendFile(__dirname + '/logs.txt', log + "\n", err => {
-        if (err) {
-        console.log(err)
-        }
-    })
+    let logPath = process.cwd()  + '/logs'
     
+    if (fs.existsSync(logPath)) {
+        fs.appendFile(logPath + '/logs.txt', log + "\n", err => {
+            if (err) {
+            console.log(err)
+            }
+        })
+    } else {
+        fs.mkdir(logPath, (err) => {
+            if (err) {
+                throw new err
+            } else {
+                fs.appendFile(process.cwd() + '/logs/logs.txt', log + "\n", err => {
+                    if (err) {
+                    console.log(err)
+                    }
+                })
+            }
+        })
+    }
+
     next()
 };
 

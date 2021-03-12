@@ -21,4 +21,4 @@ const runDBSearch = (DBName) => {
 
 runDBSearch(process.argv[2])
 
-module.exports = productRouter
+export default productRouter
