@@ -5,25 +5,38 @@ const profileRouter = express.Router()
 
 const bodyParser = require('body-parser')
 
-profileRouter.use(
+profileRouter.get(
     "/",
-    express.static(process.cwd() + '/src/client/profileData.html'),
     bodyParser.urlencoded({ extended: false }),
     async (request: Request, response: Response) => {
         let profileFilterMongo = new ProfileFilterMongo(request, response)
-        await profileFilterMongo.checkForAuthetication()
+        await profileFilterMongo.checkForAuthetication('/src/client/profileData.html')
+    }
+)
+
+profileRouter.post(
+    "/",
+    bodyParser.urlencoded({ extended: false }),
+    async (request: Request, response: Response) => {
+        let profileFilterMongo = new ProfileFilterMongo(request, response)
         profileFilterMongo.updateAccountDataCollection()
     }
 )
 
-
-profileRouter.use(
+profileRouter.get(
     "/password",
-    express.static(process.cwd() + '/src/client/profilePassword.html'),
     bodyParser.urlencoded({ extended: false }),
     async (request: Request, response: Response) => {
         let profileFilterMongo = new ProfileFilterMongo(request, response)
-        await profileFilterMongo.checkForAuthetication()
+        await profileFilterMongo.checkForAuthetication('/src/client/profilePassword.html')
+    }
+)
+
+profileRouter.use(
+    "/password",
+    bodyParser.urlencoded({ extended: false }),
+    async (request: Request, response: Response) => {
+        let profileFilterMongo = new ProfileFilterMongo(request, response)
         profileFilterMongo.updateAccountPasswordCollection()
     }
 )

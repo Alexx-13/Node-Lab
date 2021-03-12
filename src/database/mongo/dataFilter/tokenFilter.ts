@@ -100,18 +100,20 @@ export default class TokenFilterMongo implements ITokenFilterMongo {
                         if (err) {
                             throw new err
                         } else {
-                            fs.writeFile('.tokens.json',
-                            {
+                            let jsonData = {
                                 USER_ACCESS_TOKEN: this.accessToken,
                                 SER_REFRESH_TOKEN: this.refreshToken
-                            },
-                            (err) => {
-                                if(err){ 
-                                    throw err
-                                } else {
-                                    this.response.send('Access token was successfully refreshed')
-                                }
-                            })
+                            }
+        
+                            fs.writeFile('.tokens.json', 
+                                JSON.stringify(jsonData),
+                                (err) => {
+                                    if(err){ 
+                                        throw err
+                                    } else {
+                                        this.response.send('Access token was successfully refreshed')
+                                    }
+                                })
                         }
                     })
                 }

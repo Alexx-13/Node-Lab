@@ -1,7 +1,8 @@
 import { Response } from 'express'
 import db from '../../../app'
 import { HTTPStatusCodes } from '../../../httpStatus'
-const fs = require('fs');
+const fs = require('fs')
+const util = require('util')
 
 interface IProfileFilterMongo {
     request
@@ -41,32 +42,33 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
         this.requestStr = this.request.body
     }
 
-    checkForAuthetication(): Promise<boolean>{
+    async checkForAuthetication(filePath){
         try {
-            return new Promise((resolve, reject) => {
-                fs.readFile('.tokens.json', 'utf8', (err, data) => {
-                    if (err) {
-                        reject(err)
-                        return
-                    }
-                    let token 
-                    if(JSON.parse(data).USER_ACCESS_TOKEN){
-                        token = JSON.parse(data).USER_ACCESS_TOKEN
-                    }
+            const readFileContent = util.promisify(fs.readFile)
+            const data = await readFileContent('.tokens.json')
 
-                    db.default.collection(this.collectionName).find({ user_access_token: token }).toArray((err, result) => {
+            let token
+
+            if(JSON.parse(data).USER_ACCESS_TOKEN){
+                token = JSON.parse(data).USER_ACCESS_TOKEN
+            }
+
+            db.default.collection(this.collectionName).find({ user_access_token: token }).toArray((err, result) => {
+                if(err){
+                    throw new err
+                } else if (result.legth === 0){
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                } else {
+                    this.isAuth = true
+                    this.response.sendFile(process.cwd() + filePath, (err) => {
                         if(err){
                             throw new err
-                        } else if (result.legth === 0){
-                            this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                            return this.isAuth = false
                         } else {
-                            return this.isAuth = true
+                            console.log('YES')
                         }
                     })
-                    resolve(this.isAuth = true)
-                })
-            }).then(this.isAuth)
+                }
+            })
         } catch (err) {
             throw new err
         }

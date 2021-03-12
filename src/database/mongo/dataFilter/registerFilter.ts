@@ -144,15 +144,20 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                 if(err){
                     throw new err
                 } else {
+                    let jsonData = {
+                        USER_ACCESS_TOKEN: this.accessToken,
+                        SER_REFRESH_TOKEN: this.refreshToken
+                    }
+
                     fs.writeFile('.tokens.json', 
-                        {
-                            USER_ACCESS_TOKEN: this.accessToken,
-                            SER_REFRESH_TOKEN: this.refreshToken
-                        },
+                        JSON.stringify(jsonData),
                         (err) => {
-                        if(err) throw err
+                        if(err){
+                            throw new err
+                        } else {
+                            this.response.send('Account was successfully created')
+                        }
                     })
-                    this.response.send('Account was successfully created')
                 }
             })
         } catch(err){
