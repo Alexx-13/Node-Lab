@@ -1,5 +1,5 @@
 import { Express, Server } from "express"
-import logger from './logs'
+import { logger } from './database/service'
 import router from "./routes"
 import "reflect-metadata"
 
@@ -18,7 +18,7 @@ const app: Server = express()
 const PORT: Number | String = 3000 || process.env.PORT
 
 app.use(logger)
-app.use(router);
+app.use(router)
 
 app.listen(PORT, () => {
   console.log(`The server has been launched at port: ${PORT}`)

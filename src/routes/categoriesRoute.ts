@@ -1,17 +1,22 @@
 import express, { Request, Response } from 'express'
-import categoriesFilterMongo from '../database/mongo/dataFilter/categoriesFilter'
-import categoriesFilterPostgres from '../database/postgres/dataFilter/categoriesFilter'
+import CategoriesFilterPostgres from '../database/postgres/dataFilter/categoriesFilter'
+import CategoriesFilterMongo from '../database/mongo/dataFilter/categoriesFilter'
 const categoriesRouter = express.Router();
 
-
-if(process.argv[2] === 'mongo'){
-    categoriesRouter.use("/", (request: Request, response: Response) => {
-        categoriesFilterMongo(request, response)
-    })
-} else if (process.argv[2] === 'postgres'){
-    categoriesRouter.use("/", (request: Request, response: Response) => {
-        categoriesFilterPostgres(request, response)
-    })
+const runDBSearch = (DBName) => {
+    if(DBName === 'mongo'){
+        categoriesRouter.use("/", (request: Request, response: Response) => {
+            let categoriesFilter = new CategoriesFilterMongo(request, response)
+            categoriesFilter.makeDBSearch()
+        })
+    } else if (DBName === 'postgres'){
+        categoriesRouter.use("/", (request: Request, response: Response) => {
+            let categoriesFilter = new CategoriesFilterPostgres(request, response)
+            categoriesFilter.makeDBSearch()
+        })
+    }
 }
+
+runDBSearch(process.argv[2])
 
 export default categoriesRouter
