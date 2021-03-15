@@ -102,7 +102,7 @@ export default class TokenFilterMongo implements ITokenFilterMongo {
                         } else {
                             let jsonData = {
                                 USER_ACCESS_TOKEN: this.accessToken,
-                                SER_REFRESH_TOKEN: this.refreshToken
+                                USER_REFRESH_TOKEN: this.refreshToken
                             }
         
                             fs.writeFile('.tokens.json', 

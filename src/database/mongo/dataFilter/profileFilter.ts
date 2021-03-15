@@ -12,8 +12,7 @@ interface IProfileFilterMongo {
     finalQuery
     isAuth: boolean
 
-    checkForAuthetication()
-
+    getLocalToken()
     getUserName()
     getFirstName()
     getLastName()
@@ -42,31 +41,37 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
         this.requestStr = this.request.body
     }
 
-    async checkForAuthetication(filePath){
-        try {
+    async getLocalToken(){
+        try{
             const readFileContent = util.promisify(fs.readFile)
             const data = await readFileContent('.tokens.json')
 
-            let token
-
             if(JSON.parse(data).USER_ACCESS_TOKEN){
-                token = JSON.parse(data).USER_ACCESS_TOKEN
+                return JSON.parse(data).USER_ACCESS_TOKEN
             }
 
-            db.default.collection(this.collectionName).find({ user_access_token: token }).toArray((err, result) => {
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    async checkForAuthetication(filePath) {
+        try {
+            db.default.collection(this.collectionName).find({ user_access_token: await this.getLocalToken() }).toArray((err, result) => {
                 if(err){
                     throw new err
                 } else if (result.legth === 0){
                     this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 } else {
-                    this.isAuth = true
-                    this.response.sendFile(process.cwd() + filePath, (err) => {
-                        if(err){
-                            throw new err
-                        } else {
-                            console.log('YES')
-                        }
-                    })
+                    const sendPage = async () => {
+                        await this.response.sendFile(process.cwd() + filePath)
+                        console.log(1)
+                        this.isAuth = await true
+                        console.log(this.isAuth)
+                        console.log(2)
+                    }
+                    sendPage()
+                    console.log(this.isAuth + ' main param')
                 }
             })
         } catch (err) {
@@ -161,22 +166,34 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
 
     updateAccountDataCollection(){
         try{
-            if(this.isAuth){
-                let inputData = { 
-                    user_name: this.getUserName(),
-                    user_first_name: this.getFirstName(),
-                    user_last_name: this.getLastName()
-                }
-    
-                if(this.getUserName() && this.getFirstName() && this.getLastName()){
-                    db.default.collection(this.collectionName).find(inputData).toArray((err, result) => {
-                        if(err){
-                            throw new err
-                        } else if(result.length === 0){
-                            this.response.send('Incorrect data')
+            console.log(this.isAuth)
+            if(this.getUserName() && this.getFirstName() && this.getLastName()){
+                db.default.collection(this.collectionName).find(this.getLocalToken()).toArray((err, result) => {
+                    if(err){
+                        throw new err
+                    } else if(result.length === 0){
+                        this.response.send('Incorrect data')
+                    } else {
+                        let oldData: object = {
+                            user_name: result[0].user_name,
+                            user_first_name: result[0].user_first_name,
+                            user_last_name: result[0].user_last_name
                         }
-                    })
-                }
+                        let newData: object = { 
+                            user_name: this.getUserName(),
+                            user_first_name: this.getFirstName(),
+                            user_last_name: this.getLastName()
+                        }
+
+                        db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
+                            if(err){
+                                throw new err
+                            } else {
+                                this.response.send('Profile was successfully updated')
+                            }
+                        })
+                    }
+                })
             }
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
