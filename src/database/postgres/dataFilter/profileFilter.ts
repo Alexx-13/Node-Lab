@@ -1,8 +1,8 @@
 import { Response } from 'express'
 import db from '../../../app'
 import { HTTPStatusCodes } from '../../../httpStatus'
-const fs = require('fs')
-const util = require('util')
+import fs from 'fs'
+import util from 'util'
 
 interface IProfileFilterMongo {
     request
@@ -135,8 +135,6 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
                         throw new err
                     } else if (!result.row) {
                         this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                    } else {
-
                     }
                 })
             }

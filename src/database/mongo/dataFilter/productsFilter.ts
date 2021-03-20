@@ -18,7 +18,7 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName: string = 'products'
+    public collectionName = 'products'
     public finalQuery
     public dipslayName: string | object | undefined
     public minRating: number | object |  undefined
@@ -54,7 +54,7 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
 
     getPrice(){
         try{
-            let priceStr: string = this.requestStr.price
+            const priceStr: string = this.requestStr.price
             let priceArr: Array<string> | Array<number> | undefined
 
             let minPrice
@@ -96,7 +96,7 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
     createSortByQuery(){
         try{
             if(this.requestStr.sortBy){
-                let sortByStr: number | string = this.request.query.sortBy
+                const sortByStr: number | string = this.request.query.sortBy
                 let directionSortBy
 
                 if(sortByStr.split(':')[1].toLocaleLowerCase() === 'desc'){

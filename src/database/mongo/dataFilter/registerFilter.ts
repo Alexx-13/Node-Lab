@@ -1,9 +1,8 @@
 import { Response } from 'express'
-const bcrypt = require("bcrypt")
-const randtoken = require('rand-token')
-const fs = require('fs')
+import bcrypt from "bcrypt"
+import randtoken from 'rand-token'
+import fs from 'fs'
 import db from '../../../app'
-const cookieSession = require('cookie-session')
 
 interface IRegisterFilterMongo {
     request
@@ -145,7 +144,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                 if(err){
                     throw new err
                 } else {
-                    let jsonData = {
+                    const jsonData = {
                         USER_ACCESS_TOKEN: this.accessToken,
                         USER_REFRESH_TOKEN: this.refreshToken
                     }

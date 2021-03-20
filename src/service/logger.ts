@@ -9,8 +9,8 @@ const getActualRequestDurationInMilliseconds = start => {
   
   
 const logger = (request, response, next) => {
-    let current_datetime = new Date();
-    let formatted_date =
+    const current_datetime = new Date();
+    const formatted_date =
         current_datetime.getFullYear() +
         "-" +
         (current_datetime.getMonth() + 1) +
@@ -23,15 +23,15 @@ const logger = (request, response, next) => {
         ":" +
         current_datetime.getSeconds()
         
-    let method = request.method
-    let url = request.url
-    let status = response.statusCode
+    const method = request.method
+    const url = request.url
+    const status = response.statusCode
     const start = process.hrtime()
     const durationInMilliseconds = getActualRequestDurationInMilliseconds(start)
-    let log = `[${formatted_date}] ${method}:${url} ${status} ${durationInMilliseconds.toLocaleString()} ms`
+    const log = `[${formatted_date}] ${method}:${url} ${status} ${durationInMilliseconds.toLocaleString()} ms`
     console.log(log)
 
-    let logPath = process.cwd()  + '/logs'
+    const logPath = process.cwd()  + '/logs'
     
     if (fs.existsSync(logPath)) {
         fs.appendFile(logPath + '/logs.txt', log + "\n", err => {

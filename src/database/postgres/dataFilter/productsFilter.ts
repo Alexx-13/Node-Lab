@@ -20,10 +20,10 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName: string = 'products'
+    public collectionName = 'products'
     readonly paginationCondition: string = `AND id > 20 LIMIT 20`
     readonly customIndex = `CREATE INDEX idx_displayName on products(displayName)`
-    public finalQuery: string = `SELECT * FROM products`
+    public finalQuery = `SELECT * FROM products`
     public dipslayName
     public minRating
     public price
@@ -57,7 +57,7 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
 
     getPrice(){
         try{
-            let priceStr = this.requestStr.price
+            const priceStr = this.requestStr.price
             let priceArr: Array<string> | Array<number> | undefined 
 
             let minPrice
@@ -99,9 +99,9 @@ export default class ProductsFilterPostgres implements IProductsFilterPostgres {
 
     getSortBy(){
         try{
-            let sortByStr: number | string = this.request.query.sortBy
-            let queryField = sortByStr.split(':')[0]
-            let querySortBy = sortByStr.split(':')[1].toLocaleLowerCase()
+            const sortByStr: number | string = this.request.query.sortBy
+            const queryField = sortByStr.split(':')[0]
+            const querySortBy = sortByStr.split(':')[1].toLocaleLowerCase()
 
             if(querySortBy === 'desc'){
                 this.sortBy = `ORDER BY ${queryField} DESC`

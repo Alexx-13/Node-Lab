@@ -3,7 +3,7 @@ import TokenFilterMongo from '../../database/mongo/dataFilter/tokenFilter'
 import TokenFilterPostgres from '../../database/postgres/dataFilter/tokenFilter'
 const tokenRouter = express.Router()
 
-const bodyParser = require('body-parser')
+import bodyParser from 'body-parser'
 
 
 const runDBSearch = (DBName) => {
@@ -16,7 +16,7 @@ const runDBSearch = (DBName) => {
         tokenRouter.post("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                let tokenFilter = new TokenFilterMongo(request, response)
+                const tokenFilter = new TokenFilterMongo(request, response)
                 tokenFilter.updateToken()
             }
         )
@@ -29,7 +29,7 @@ const runDBSearch = (DBName) => {
         tokenRouter.use("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                let tokenFilter = new TokenFilterPostgres(request, response)
+                const tokenFilter = new TokenFilterPostgres(request, response)
                 tokenFilter.updateToken()
             }
         )

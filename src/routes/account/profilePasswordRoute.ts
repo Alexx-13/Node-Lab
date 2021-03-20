@@ -1,11 +1,11 @@
-import express, { Request, Response } from 'express'
+import express, { Response } from 'express'
 import ProfileFilterMongo from '../../database/mongo/dataFilter/profileFilter'
 import ProfileFilterPostgres from '../../database/postgres/dataFilter/profileFilter'
-const cookieSession = require('cookie-session')
+import cookieSession from 'cookie-session'
 
 const profilePasswordRouter = express.Router()
 
-const bodyParser = require('body-parser')
+import bodyParser from 'body-parser'
 
 const runDBSearch = (DBName) => {
     profilePasswordRouter.use(cookieSession({

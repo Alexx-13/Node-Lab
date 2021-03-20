@@ -1,9 +1,8 @@
 import express, { Response } from 'express'
 import RegisterFilterMongo from '../../database/mongo/dataFilter/registerFilter'
 import RegisterFilterPostgres from '../../database/postgres/dataFilter/registerFilter'
-// import { SessionHandler } from '../../service'
-const bodyParser = require('body-parser')
-const cookieSession = require('cookie-session')
+import bodyParser from 'body-parser'
+import cookieSession from 'cookie-session'
 
 const registerRouter = express.Router()
 
@@ -22,7 +21,7 @@ const runDBSearch = (DBName) => {
         registerRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                let registerFilter = new RegisterFilterMongo(request, response)
+                const registerFilter = new RegisterFilterMongo(request, response)
                 registerFilter.setAccountCollection()
             }
         )
@@ -37,7 +36,7 @@ const runDBSearch = (DBName) => {
         registerRouter.post("/",
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                let registerFilter = new RegisterFilterPostgres(request, response)
+                const registerFilter = new RegisterFilterPostgres(request, response)
                 registerFilter.setAccountCollection()
             }
         )

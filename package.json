@@ -1,11 +1,12 @@
 {
   "scripts": {
     "start:dev:mongo": "nodemon -- mongo",
-    "start:dev:postgres": "nodemon -- postgres"
+    "start:dev:postgres": "nodemon -- postgres",
+    "lint": "eslint src --ext .ts"
   },
   "husky": {
     "hooks": {
-        "pre-commit": "pretty-quick --staged"
+      "pre-commit": "pretty-quick --staged"
     }
   },
   "dependencies": {
