@@ -1,11 +1,11 @@
 import { Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 const bcrypt = require("bcrypt")
 const randtoken = require('rand-token')
 const fs = require('fs')
 import db from '../../../app'
-const cookieSession = require('cookie-session')
 
-interface IRegisterFilterMongo {
+interface IRegisterFilterPostgres {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -27,7 +27,7 @@ interface IRegisterFilterMongo {
     setAccountCollection()
 }
 
-export default class RegisterFilterMongo implements IRegisterFilterMongo {
+export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'
@@ -118,7 +118,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     setFinalQuery() {
         try{
-            return this.finalQuery = {
+            this.finalQuery = {
                 user_name: this.getUserName(),
                 user_password: this.getUserUnhashedPassword(),
                 user_first_name: this.getUserFirstName(),
@@ -126,6 +126,12 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                 user_access_token: this.handleAccessToken(),
                 user_refresh_token: this.handleRefreshToken()
             }
+
+            return `INSERT INTO ${this.collectionName} 
+                (${Object.keys(this.finalQuery).join()})
+                VALUES 
+                (${Object.values(this.finalQuery).join()})
+            `
         } catch (err){
             throw new err
         }
@@ -141,9 +147,11 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     setAccountCollection(){
         try{
-            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, result) => {
-                if(err){
+            db.default.query(this.getFinalQuery(), (err, results) => {
+                if (err){
                     throw new err
+                } else if (!results.row){
+                    this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
                     let jsonData = {
                         USER_ACCESS_TOKEN: this.accessToken,
@@ -156,8 +164,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                         if(err){
                             throw new err
                         } else {
-                            this.request.session.isAuth = true
-                            this.response.send('Account was successfully created' + this.request.session.isAuth)
+                            this.response.send('Account was successfully created')
                         }
                     })
                 }

@@ -3,22 +3,22 @@ import ProfileFilterMongo from '../../database/mongo/dataFilter/profileFilter'
 import ProfileFilterPostgres from '../../database/postgres/dataFilter/profileFilter'
 const cookieSession = require('cookie-session')
 
-const profileRouter = express.Router()
+const profilePasswordRouter = express.Router()
 
 const bodyParser = require('body-parser')
 
 const runDBSearch = (DBName) => {
-    profileRouter.use(cookieSession({
+    profilePasswordRouter.use(cookieSession({
         name: 'session',
         keys: ['key1', 'key2']
     }))
 
-    profileRouter.get(
+    profilePasswordRouter.get(
         "/",
         bodyParser.urlencoded({ extended: false }),
         (request, response) => {
             if(request.session.isAuth === true){
-                response.sendFile(process.cwd() + '/src/client/profile.html')
+                response.sendFile(process.cwd() + '/src/client/profilePassword.html')
             } else {
                 response.send('You are unauthenticated' + request.session.isAuth)
             }
@@ -26,17 +26,21 @@ const runDBSearch = (DBName) => {
     )
 
     if(DBName === 'mongo'){
-        profileRouter.post(
+        profilePasswordRouter.post(
             "/",
             bodyParser.urlencoded({ extended: false }),
-            async (request: Request, response: Response) => {
-                let profileFilterMongo = new ProfileFilterMongo(request, response)
-                profileFilterMongo.updateAccountDataCollection()
+            async (request, response: Response) => {
+                if(request.session.isAuth === true){
+                    let profileFilterMongo = new ProfileFilterMongo(request, response)
+                    profileFilterMongo.updateAccountPasswordCollection()
+                } else {
+                    response.send('You are unauthenticated')
+                }
             }
         )
 
     } else if (DBName === 'postgres'){
-        profileRouter.post(
+        profilePasswordRouter.post(
             "/",
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
@@ -53,4 +57,4 @@ const runDBSearch = (DBName) => {
 
 runDBSearch(process.argv[2])
 
-export default profileRouter
+export default profilePasswordRouter

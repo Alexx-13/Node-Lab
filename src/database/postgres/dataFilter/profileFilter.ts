@@ -9,8 +9,6 @@ interface IProfileFilterMongo {
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
-    isAuth: boolean
 
     getLocalToken()
     getUserName()
@@ -29,10 +27,6 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     readonly request
     readonly response
     readonly collectionName: string = 'account'
-    public finalQuery = {
-        user_password: '',
-    }
-    isAuth
     requestStr: { [queryParam: string]: string }
 
     constructor(request, response){
@@ -95,9 +89,31 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
         }
     }
 
+    setDataFinalQuery(){
+        try {
+            return `UPDATE ${this.collectionName} SET 
+                user_name = ${this.getUserName()}
+                user_first_name = ${this.getFirstName()}
+                user_last_name = ${this.getLastName()}
+            `
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    getDataFinalQuery(){
+        try {
+            return this.setDataFinalQuery()
+        } catch (err) {
+            throw new err
+        }
+    }
+
     setPasswordFinalQuery(){
         try {
-            return this.finalQuery.user_password = this.getNewPassword()
+            return `UPDATE ${this.collectionName} SET 
+                user_password = ${this.getNewPassword()}
+            `
         } catch (err) {
             throw new err
         }
@@ -105,7 +121,7 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
 
     getPasswordFinalQuery(){
         try{
-            return { $set: this.setPasswordFinalQuery() }
+            return this.setPasswordFinalQuery()
         } catch (err) {
             throw new err
         }
@@ -113,27 +129,16 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
 
     updateAccountPasswordCollection(){
         try {
-            if(this.isAuth){
-                let oldData = { user_password: this.getOldPassword() }
-                let newData = { $set: { user_password: this.getNewPassword() } }
-    
-                if(this.getOldPassword() && this.getNewPassword()){
-                    db.default.collection(this.collectionName).find(oldData).toArray((err, result) => {
-                        if(err){
-                            throw new err
-                        } else if(result.length === 0){
-                            this.response.send('Incorrect data')
-                        } else {
-                            db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
-                                if(err){
-                                    throw new err
-                                } else {
-                                    this.response.send('The password was updated')
-                                }
-                            })
-                        }
-                    })
-                }
+            if(this.getNewPassword() && this.getOldPassword()){
+                db.default.query(this.getPasswordFinalQuery(), (err, result) => {
+                    if(err){
+                        throw new err
+                    } else if (!result.row) {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    } else {
+
+                    }
+                })
             }
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
@@ -142,32 +147,14 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
 
     updateAccountDataCollection(){
         try{
-            console.log(this.isAuth)
             if(this.getUserName() && this.getFirstName() && this.getLastName()){
-                db.default.collection(this.collectionName).find(this.getLocalToken()).toArray((err, result) => {
+                db.default.query(this.getDataFinalQuery(), (err, result) => {
                     if(err){
                         throw new err
-                    } else if(result.length === 0){
-                        this.response.send('Incorrect data')
+                    } else if (!result.row){
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
                     } else {
-                        let oldData: object = {
-                            user_name: result[0].user_name,
-                            user_first_name: result[0].user_first_name,
-                            user_last_name: result[0].user_last_name
-                        }
-                        let newData: object = { 
-                            user_name: this.getUserName(),
-                            user_first_name: this.getFirstName(),
-                            user_last_name: this.getLastName()
-                        }
-
-                        db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
-                            if(err){
-                                throw new err
-                            } else {
-                                this.response.send('Profile was successfully updated')
-                            }
-                        })
+                        this.response.send('Profile was successfully updated')
                     }
                 })
             }

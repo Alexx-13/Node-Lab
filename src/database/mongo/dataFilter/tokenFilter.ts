@@ -1,6 +1,5 @@
 import { Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
-const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const randtoken = require('rand-token')
 import db from '../../../app'
