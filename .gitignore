@@ -1,4 +1,5 @@
 # Dependencies
 node_modules
 .env
+.tokens.json
 .logs

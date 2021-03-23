@@ -1,7 +1,8 @@
 import { Express, Server } from "express"
-import { logger } from './database/service'
+import { logger } from './service'
 import router from "./routes"
 import "reflect-metadata"
+
 
 let db
 
