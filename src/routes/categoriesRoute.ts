@@ -6,12 +6,12 @@ const categoriesRouter = express.Router();
 const runDBSearch = (DBName) => {
     if(DBName === 'mongo'){
         categoriesRouter.use("/", (request: Request, response: Response) => {
-            let categoriesFilter = new CategoriesFilterMongo(request, response)
+            const categoriesFilter = new CategoriesFilterMongo(request, response)
             categoriesFilter.makeDBSearch()
         })
     } else if (DBName === 'postgres'){
         categoriesRouter.use("/", (request: Request, response: Response) => {
-            let categoriesFilter = new CategoriesFilterPostgres(request, response)
+            const categoriesFilter = new CategoriesFilterPostgres(request, response)
             categoriesFilter.makeDBSearch()
         })
     }

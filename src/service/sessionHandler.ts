@@ -1,6 +1,4 @@
-
-
-const cookieSession = require('cookie-session')
+import cookieSession from 'cookie-session'
 
 export default class SessionHandler {
     readonly middleWare

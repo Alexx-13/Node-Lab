@@ -1,8 +1,8 @@
 import { Response } from 'express'
 import db from '../../../app'
 import { HTTPStatusCodes } from '../../../httpStatus'
-const fs = require('fs')
-const util = require('util')
+import fs from 'fs'
+import util from 'util'
 
 interface IProfileFilterMongo {
     request
@@ -114,8 +114,8 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     updateAccountPasswordCollection(){
         try {
             if(this.isAuth){
-                let oldData = { user_password: this.getOldPassword() }
-                let newData = { $set: { user_password: this.getNewPassword() } }
+                const oldData = { user_password: this.getOldPassword() }
+                const newData = { $set: { user_password: this.getNewPassword() } }
     
                 if(this.getOldPassword() && this.getNewPassword()){
                     db.default.collection(this.collectionName).find(oldData).toArray((err, result) => {
@@ -150,12 +150,12 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
                     } else if(result.length === 0){
                         this.response.send('Incorrect data')
                     } else {
-                        let oldData: object = {
+                        const oldData: object = {
                             user_name: result[0].user_name,
                             user_first_name: result[0].user_first_name,
                             user_last_name: result[0].user_last_name
                         }
-                        let newData: object = { 
+                        const newData: object = { 
                             user_name: this.getUserName(),
                             user_first_name: this.getFirstName(),
                             user_last_name: this.getLastName()

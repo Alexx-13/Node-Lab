@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
-const fs = require('fs')
-const randtoken = require('rand-token')
+import fs from 'fs'
+import randtoken from 'rand-token'
 import db from '../../../app'
 
 interface ITokenFilterPostgres {
@@ -85,7 +85,7 @@ export default class TokenFilterPostgres implements ITokenFilterPostgres {
                 } else if (!result.row){
                     this.response.send('Username or token incorrect')
                 } else {
-                    let jsonData = {
+                    const jsonData = {
                         USER_ACCESS_TOKEN: this.accessToken,
                         USER_REFRESH_TOKEN: this.refreshToken
                     }

@@ -2,9 +2,7 @@ import express, { Request, Response } from 'express'
 import AuthenticateFilterMongo from '../../database/mongo/dataFilter/authenticateFilter'
 import AuthenticateFilterPostgres from '../../database/postgres/dataFilter/authenticateFilter'
 const authenticateRouter = express.Router()
-const bodyParser = require('body-parser');
-
-
+import bodyParser from 'body-parser'
 
 const runDBSearch = (DBName) => {
     if(DBName === 'mongo'){
@@ -16,7 +14,7 @@ const runDBSearch = (DBName) => {
         authenticateRouter.post("/", 
         bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                let authenticateFilter = new AuthenticateFilterMongo(request, response)
+                const authenticateFilter = new AuthenticateFilterMongo(request, response)
                 authenticateFilter.getToken()
             }
         )
@@ -30,7 +28,7 @@ const runDBSearch = (DBName) => {
         authenticateRouter.use("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                let authenticateFilter = new AuthenticateFilterPostgres(request, response)
+                const authenticateFilter = new AuthenticateFilterPostgres(request, response)
                 authenticateFilter.getToken()
             }
         )

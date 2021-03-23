@@ -16,7 +16,7 @@ if (process.argv[2] === 'mongo'){
 
 const express: Express = require('express')
 const app: Server = express()
-const PORT: Number | String = 3000 || process.env.PORT
+const PORT: number | string = 3000 || process.env.PORT
 
 app.use(logger)
 app.use(router)

@@ -8,12 +8,12 @@ const productRouter = express.Router()
 const runDBSearch = (DBName) => {
     if (DBName === 'mongo'){
         productRouter.use("/", paginationHandler(ProductsModel), async (request: Request, response: Response) => {
-            let productsFilter = new ProductsFilterMongo(request, response)
+            const productsFilter = new ProductsFilterMongo(request, response)
             productsFilter.makeDBSearch()
         })
     } else if (DBName === 'postgres'){
         productRouter.use("/", async (request: Request, response: Response) => {
-            let productsFilter = new ProductsFilterPostgres(request, response)
+            const productsFilter = new ProductsFilterPostgres(request, response)
             productsFilter.makeDBSearch()
         })
     }
