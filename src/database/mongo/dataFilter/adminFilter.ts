@@ -2,11 +2,18 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-// interface IAdminFilterMongo {
+interface IAdminFilterMongo {
+    getProductId()
+    getSearchByIdQuery()
+    makeDBSearchById()
+    makeDBPost()
+    getDeleteByIdQuery()
+    makeDBDeleteById()
+    getDBPatchByIdQuery()
+    makeDBPathcById()
+}
 
-// }
-
-export default class AdminFilterMongo {
+export default class AdminFilterMongo implements IAdminFilterMongo{
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
@@ -36,15 +43,27 @@ export default class AdminFilterMongo {
     }
 
     makeDBSearchById(){
-        db.default.collection(this.collectionName).find(this.getSearchByIdQuery()).toArray((err, result) => {
+        db.default.collection(this.collectionName).find(this.getSearchByIdQuery()).toArray((err, results) => {
             if (err){
                 throw err;
-            } else if(result.length === 0){
+            } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.NOT_FOUND)
             } else {
-                this.response.send(result)
+                this.response.send(results)
             }
         })    
+    }
+
+    makeDBPost(){
+        db.default.collection(this.collectionName).insertOne(this.requestStr).toArray((err, results) => {
+            if (err){
+                throw err;
+            } else if(results.length === 0){
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            } else {
+                this.response.send(results)
+            }
+        }) 
     }
 
     getDeleteByIdQuery(){
@@ -56,13 +75,13 @@ export default class AdminFilterMongo {
     }
 
     makeDBDeleteById(){
-        db.default.collection(this.collectionName).deleteOne(this.getSearchByIdQuery()).toArray((err, result) => {
+        db.default.collection(this.collectionName).deleteOne(this.getSearchByIdQuery()).toArray((err, results) => {
             if (err){
                 throw err;
-            } else if(result.length === 0){
+            } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             } else {
-                this.response.send(result)
+                this.response.send(results)
             }
         })    
     }
@@ -76,25 +95,13 @@ export default class AdminFilterMongo {
     }
 
     makeDBPathcById(){
-        db.default.collection(this.collectionName).update(this.getDBPatchByIdQuery()).toArray((err, result) => {
+        db.default.collection(this.collectionName).update(this.getDBPatchByIdQuery()).toArray((err, results) => {
             if (err){
                 throw err;
-            } else if(result.length === 0){
+            } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             } else {
-                this.response.send(result)
-            }
-        }) 
-    }
-
-    makeDBPost(){
-        db.default.collection(this.collectionName).insertOne(this.requestStr).toArray((err, result) => {
-            if (err){
-                throw err;
-            } else if(result.length === 0){
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            } else {
-                this.response.send(result)
+                this.response.send(results)
             }
         }) 
     }

@@ -93,11 +93,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     getUserRole(){
         try{
-            if(this.requestStr.user_role === 'admin' || this.requestStr.user_role === 'buyer'){
-                return this.requestStr.user_role
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
+            return this.requestStr.user_role
         } catch(err){
             throw new err
         }
@@ -132,15 +128,20 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     setFinalQuery() {
         try{
-            return this.finalQuery = {
-                user_name: this.getUserName(),
-                user_role: this.getUserRole(),
-                user_password: this.getUserUnhashedPassword(),
-                user_first_name: this.getUserFirstName(),
-                user_last_name: this.getUserLastName(),
-                user_access_token: this.handleAccessToken(),
-                user_refresh_token: this.handleRefreshToken()
+            if(this.getUserRole() === 'admin' || this.getUserRole() === 'buyer'){
+                return this.finalQuery = {
+                    user_name: this.getUserName(),
+                    user_role: this.getUserRole(),
+                    user_password: this.getUserUnhashedPassword(),
+                    user_first_name: this.getUserFirstName(),
+                    user_last_name: this.getUserLastName(),
+                    user_access_token: this.handleAccessToken(),
+                    user_refresh_token: this.handleRefreshToken()
+                }
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
+           
         } catch (err){
             throw new err
         }
@@ -156,7 +157,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
 
     setAccountCollection(){
         try{
-            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, result) => {
+            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, results) => {
                 if(err){
                     throw new err
                 } else {

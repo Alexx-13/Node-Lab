@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import AdminFilterMongo from '../../database/mongo/dataFilter/adminFilter'
-// import AdminFilterPostgres from '../../database/postgres/dataFilter/adminFilter'
+import AdminFilterPostgres from '../../database/postgres/dataFilter/adminFilter'
 const adminProductsRouter = express.Router()
 import bodyParser from 'body-parser'
 
@@ -38,21 +38,39 @@ const runDBSearch = (DBName) => {
             }
         )
 
-    } 
-    // else if (DBName === 'postgres'){
-    //     adminRouter.get("/",
-    //         express.static(process.cwd() + '/src/client/authenticate.html'),
-    //         bodyParser.urlencoded({ extended: false }),
-    //     )
+    } else if (DBName === 'postgres'){
+        adminProductsRouter.get("/:id", 
+            bodyParser.urlencoded({ extended: false }),
+            async (request: Request, response: Response) => {
+                const adminFilter = new AdminFilterPostgres(request, response)
+                adminFilter.makeDBSearchById()
+            }
+        )
 
-    //     adminRouter.use("/",
-    //         bodyParser.urlencoded({ extended: false }),
-    //         async (request: Request, response: Response) => {
-    //             const adminFilter = new AdminFilterPostgres(request, response)
-    //             adminFilter.getToken()
-    //         }
-    //     )
-    // }
+        adminProductsRouter.post("/", 
+            bodyParser.urlencoded({ extended: false }),
+            async (request: Request, response: Response) => {
+                const adminFilter = new AdminFilterPostgres(request, response)
+                adminFilter.makeDBPost()
+            }
+        )
+
+        adminProductsRouter.delete("/:id", 
+            bodyParser.urlencoded({ extended: false }),
+            async (request: Request, response: Response) => {
+                const adminFilter = new AdminFilterPostgres(request, response)
+                adminFilter.makeDBDeleteById()
+            }
+        )
+
+        adminProductsRouter.patch("/:id", 
+            bodyParser.urlencoded({ extended: false }),
+            async (request: Request, response: Response) => {
+                const adminFilter = new AdminFilterPostgres(request, response)
+                adminFilter.getDBPatchByIdQuery()
+            }
+        )
+    }
 }
 
 runDBSearch(process.argv[2])

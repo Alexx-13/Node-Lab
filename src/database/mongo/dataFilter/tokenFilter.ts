@@ -86,16 +86,16 @@ export default class TokenFilterMongo implements ITokenFilterMongo {
         try{
             this.setFinalQuery()
 
-            db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, results) => {
                 if(err){
                     throw new err
-                } else if (result.length === 0) {
+                } else if (results.length === 0) {
                     this.response.send('Username or token incorrect')
                 } else {
-                    let oldData = { user_access_token:  result[0].user_access_token }
+                    let oldData = { user_access_token:  results[0].user_access_token }
                     let newData = { $set: { user_access_token:  this.handleAccessToken() } }
                     
-                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
+                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                         if (err) {
                             throw new err
                         } else {

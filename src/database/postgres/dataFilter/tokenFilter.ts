@@ -79,10 +79,10 @@ export default class TokenFilterPostgres implements ITokenFilterPostgres {
 
     updateToken(){
         try{
-            db.default.query(this.getFindQuery(), (err, result) => {
+            db.default.query(this.getFindQuery(), (err, results) => {
                 if (err){
                     throw new err
-                } else if (!result.row){
+                } else if (!results.row){
                     this.response.send('Username or token incorrect')
                 } else {
                     const jsonData = {

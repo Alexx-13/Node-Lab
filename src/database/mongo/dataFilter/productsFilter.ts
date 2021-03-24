@@ -146,23 +146,23 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
         this.createSortByQuery()
 
         if(this.getSortByQuery()){
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, results) => {
                 if (err){
                     throw err;
-                } else if(result.length === 0){
+                } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    this.response.send(result)
+                    this.response.send(results)
                 }
             })    
         } else {
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, results) => {
                 if (err){
                     throw err;
-                } else if(result.length === 0){
+                } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    this.response.send(result)
+                    this.response.send(results)
                 }
             })
         }  

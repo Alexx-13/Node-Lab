@@ -70,13 +70,13 @@ export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo
         try {
             const { user_name, user_password } = this.getFinalQuery()
 
-            db.default.collection(this.collectionName).find({ user_name: user_name, user_password: user_password }).toArray((err, result) => {
+            db.default.collection(this.collectionName).find({ user_name: user_name, user_password: user_password }).toArray((err, results) => {
                 if(err){
                     throw new err
-                } else if (result.length === 0){
+                } else if (results.length === 0){
                     this.response.send('Username or password incorrect')
                 } else {
-                    this.response.send(result[0].user_access_token)
+                    this.response.send(results[0].user_access_token)
                 }
             })
         } catch (err) {

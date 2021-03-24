@@ -35,6 +35,7 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     refreshToken
     public finalQuery = {
         user_name: '',
+        user_role: '',
         user_password: '',
         user_first_name: '',
         user_last_name: '',
@@ -68,6 +69,14 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     getUserName() {
         try{
             return this.requestStr.user_field
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getUserRole(){
+        try{
+            return this.requestStr.user_role
         } catch(err){
             throw new err
         }
@@ -118,20 +127,25 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
 
     setFinalQuery() {
         try{
-            this.finalQuery = {
-                user_name: this.getUserName(),
-                user_password: this.getUserUnhashedPassword(),
-                user_first_name: this.getUserFirstName(),
-                user_last_name: this.getUserLastName(),
-                user_access_token: this.handleAccessToken(),
-                user_refresh_token: this.handleRefreshToken()
+            if(this.getUserRole() === 'admin' || this.getUserRole() === 'buyer'){
+                this.finalQuery = {
+                    user_name: this.getUserName(),
+                    user_role: this.getUserRole(),
+                    user_password: this.getUserUnhashedPassword(),
+                    user_first_name: this.getUserFirstName(),
+                    user_last_name: this.getUserLastName(),
+                    user_access_token: this.handleAccessToken(),
+                    user_refresh_token: this.handleRefreshToken()
+                }
+    
+                return `INSERT INTO ${this.collectionName} 
+                    (${Object.keys(this.finalQuery).join()})
+                    VALUES 
+                    (${Object.values(this.finalQuery).join()})
+                `
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
-
-            return `INSERT INTO ${this.collectionName} 
-                (${Object.keys(this.finalQuery).join()})
-                VALUES 
-                (${Object.values(this.finalQuery).join()})
-            `
         } catch (err){
             throw new err
         }
