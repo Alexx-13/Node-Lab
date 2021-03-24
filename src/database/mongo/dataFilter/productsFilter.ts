@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
@@ -21,6 +22,7 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
     public collectionName = 'products'
     public finalQuery
     public dipslayName: string | object | undefined
+    public userRating: number | undefined
     public minRating: number | object |  undefined
     public price: string | object | undefined
     public sortBy: string | undefined
@@ -29,6 +31,49 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
         this.request = request
         this.response = response
         this.requestStr = request.query
+    }
+
+    getUserRating(){
+        try{
+            const rating = parseInt(this.request.params.value)
+
+            if(rating <= 10 && rating >= 1){
+                this.userRating = rating
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getUserRatingQuery(){
+        try{
+          return { totalRating: this.getUserRating() }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBRatingUpdate(){
+        db.default.collection(this.collectionName).find(this.getUserRatingQuery()).toArray((err, results) => {
+            if (err){
+                throw err;
+            } else if(results.length === 0){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                const oldData = { totalRating:  results[0].totalRating }
+                const newData = { $set: this.getUserRatingQuery() }
+
+                db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
+                    if (err) {
+                        throw new err
+                    } else {
+                        this.response.send(HTTPStatusCodes.OK)
+                    }
+                })
+            }
+        })
     }
 
     getDisplayName(){
