@@ -1,18 +1,18 @@
 import express, { Response } from 'express'
-import AdminFilterMongo from '../../database/mongo/dataFilter/adminProductsFilter'
+import AdminFilterMongo from '../../database/mongo/dataFilter/adminCategoriesFilter'
 import AdminFilterPostgres from '../../database/postgres/dataFilter/adminCategoriesFilter'
-const adminProductsRouter = express.Router()
+const adminCategoriesRouter = express.Router()
 import bodyParser from 'body-parser'
 import cookieSession from 'cookie-session'
 
 const runDBSearch = (DBName) => {
-    adminProductsRouter.use(cookieSession({
+    adminCategoriesRouter.use(cookieSession({
         name: 'session',
         keys: ['key1', 'key2']
     }))
 
     if(DBName === 'mongo'){
-        adminProductsRouter.get("/:id", 
+        adminCategoriesRouter.get("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -24,7 +24,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.post("/", 
+        adminCategoriesRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -36,7 +36,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.delete("/:id", 
+        adminCategoriesRouter.delete("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -48,7 +48,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.patch("/:id", 
+        adminCategoriesRouter.patch("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -61,7 +61,7 @@ const runDBSearch = (DBName) => {
         )
 
     } else if (DBName === 'postgres'){
-        adminProductsRouter.get("/:id", 
+        adminCategoriesRouter.get("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -73,7 +73,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.post("/", 
+        adminCategoriesRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -85,7 +85,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.delete("/:id", 
+        adminCategoriesRouter.delete("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -97,7 +97,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.patch("/:id", 
+        adminCategoriesRouter.patch("/:id", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -113,4 +113,4 @@ const runDBSearch = (DBName) => {
 
 runDBSearch(process.argv[2])
 
-export default adminProductsRouter
+export default adminCategoriesRouter

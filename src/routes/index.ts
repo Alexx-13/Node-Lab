@@ -7,7 +7,7 @@ import profileRouter from './account/profileRoute'
 import profilePasswordRouter from './account/profilePasswordRoute'
 import tokenRouter from './account/tokenRoute'
 import adminProductsRouter from './admin/adminProductsRouter'
-// import adminCategoriesRouter from './admin/adminCategoriesRouter'
+import adminCategoriesRouter from './admin/adminCategoriesRouter'
 
 const router: Router = express.Router()
 
@@ -19,6 +19,6 @@ router.use("/profile", profileRouter)
 router.use("/profile/password", profilePasswordRouter)
 router.use("/token", tokenRouter)
 router.use("/admin/products", adminProductsRouter)
-// router.use("/admin/categories", adminCategoriesRouter)
+router.use("/admin/categories", adminCategoriesRouter)
 
 export default router
