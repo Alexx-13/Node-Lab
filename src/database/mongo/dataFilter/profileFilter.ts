@@ -44,7 +44,7 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     async getLocalToken(){
         try{
             const readFileContent = util.promisify(fs.readFile)
-            const data = await readFileContent('.tokens.json')
+            const data = await readFileContent('.tokens.json').toString()
 
             if(JSON.parse(data).USER_ACCESS_TOKEN){
                 return JSON.parse(data).USER_ACCESS_TOKEN

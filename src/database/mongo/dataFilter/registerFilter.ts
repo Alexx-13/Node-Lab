@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
 import bcrypt from "bcrypt"
 import randtoken from 'rand-token'
 import fs from 'fs'
@@ -153,7 +154,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
                         JSON.stringify(jsonData),
                         (err) => {
                         if(err){
-                            throw new err
+                            this.response.send(HTTPStatusCodes.NOT_FOUND)
                         } else {
                             this.request.session.isAuth = true
                             this.response.send('Account was successfully created' + this.request.session.isAuth)

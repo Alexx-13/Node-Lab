@@ -162,7 +162,7 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
                         JSON.stringify(jsonData),
                         (err) => {
                         if(err){
-                            throw new err
+                            this.response.send(HTTPStatusCodes.NOT_FOUND)
                         } else {
                             this.response.send('Account was successfully created')
                         }
