@@ -6,7 +6,7 @@ import db from '../../../app'
 
 // }
 
-export default class AdminFilterMongo {
+export default class AdminFilterPostgres {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }

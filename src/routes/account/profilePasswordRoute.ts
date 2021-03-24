@@ -31,7 +31,7 @@ const runDBSearch = (DBName) => {
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
-                    let profileFilterMongo = new ProfileFilterMongo(request, response)
+                    const profileFilterMongo = new ProfileFilterMongo(request, response)
                     profileFilterMongo.updateAccountPasswordCollection()
                 } else {
                     response.send('You are unauthenticated')
@@ -45,7 +45,7 @@ const runDBSearch = (DBName) => {
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
-                    let profileFilterMongo = new ProfileFilterPostgres(request, response)
+                    const profileFilterMongo = new ProfileFilterPostgres(request, response)
                     profileFilterMongo.updateAccountPasswordCollection()
                 } else {
                     response.send('You are unauthenticated')
