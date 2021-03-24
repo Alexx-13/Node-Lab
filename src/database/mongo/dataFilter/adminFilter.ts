@@ -1,0 +1,102 @@
+import { Request, Response } from 'express'
+import { HTTPStatusCodes } from '../../../httpStatus'
+import db from '../../../app'
+
+// interface IAdminFilterMongo {
+
+// }
+
+export default class AdminFilterMongo {
+    readonly request: Request
+    readonly response: Response
+    public requestStr: { [queryParam: string]: string }
+    public collectionName = 'products'
+    public productId: string | undefined
+
+    constructor(request, response){
+        this.request = request
+        this.response = response
+        this.requestStr = request.query
+    }
+
+    getProductId(){
+        try{
+            this.productId = this.request.params.id
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getSearchByIdQuery(){
+        try{
+            return { _id: this.getProductId() }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBSearchById(){
+        db.default.collection(this.collectionName).find(this.getSearchByIdQuery()).toArray((err, result) => {
+            if (err){
+                throw err;
+            } else if(result.length === 0){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                this.response.send(result)
+            }
+        })    
+    }
+
+    getDeleteByIdQuery(){
+        try{
+            return { _id: this.getProductId() }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBDeleteById(){
+        db.default.collection(this.collectionName).deleteOne(this.getSearchByIdQuery()).toArray((err, result) => {
+            if (err){
+                throw err;
+            } else if(result.length === 0){
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            } else {
+                this.response.send(result)
+            }
+        })    
+    }
+    
+    getDBPatchByIdQuery(){
+        try{
+            return { _id: this.getProductId(), $set: this.requestStr }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBPathcById(){
+        db.default.collection(this.collectionName).update(this.getDBPatchByIdQuery()).toArray((err, result) => {
+            if (err){
+                throw err;
+            } else if(result.length === 0){
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            } else {
+                this.response.send(result)
+            }
+        }) 
+    }
+
+    makeDBPost(){
+        db.default.collection(this.collectionName).insertOne(this.requestStr).toArray((err, result) => {
+            if (err){
+                throw err;
+            } else if(result.length === 0){
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            } else {
+                this.response.send(result)
+            }
+        }) 
+    }
+
+}

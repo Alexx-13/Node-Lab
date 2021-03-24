@@ -19,6 +19,7 @@ interface IRegisterFilterMongo {
     getUserName()
     getUserFirstName()
     getUserLastName()
+    getUserRole()
     getUserUnhashedPassword()
     setHashedUserPassword()
     getHashedUserPassword()
@@ -35,6 +36,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
     refreshToken
     public finalQuery = {
         user_name: '',
+        user_role: '',
         user_password: '',
         user_first_name: '',
         user_last_name: '',
@@ -89,6 +91,18 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
         }
     }
 
+    getUserRole(){
+        try{
+            if(this.requestStr.user_role === 'admin' || this.requestStr.user_role === 'buyer'){
+                return this.requestStr.user_role
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        } catch(err){
+            throw new err
+        }
+    }
+
     getUserUnhashedPassword() { 
         try{
             return this.requestStr.user_password
@@ -120,6 +134,7 @@ export default class RegisterFilterMongo implements IRegisterFilterMongo {
         try{
             return this.finalQuery = {
                 user_name: this.getUserName(),
+                user_role: this.getUserRole(),
                 user_password: this.getUserUnhashedPassword(),
                 user_first_name: this.getUserFirstName(),
                 user_last_name: this.getUserLastName(),
