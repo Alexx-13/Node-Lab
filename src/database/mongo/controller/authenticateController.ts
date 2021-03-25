@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import db from '../../../app'
 
-interface IAuthenticateFilterMongo {
+interface IAuthenticateControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -15,7 +15,7 @@ interface IAuthenticateFilterMongo {
     getToken()
 }
 
-export default class AuthenticateFilterMongo implements IAuthenticateFilterMongo {
+export default class AuthenticateControllerMongo implements IAuthenticateControllerMongo {
     readonly request
     readonly response
     readonly collectionName: string = 'account'

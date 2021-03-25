@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
-import ProfileFilterMongo from '../../database/mongo/dataFilter/profileFilter'
-import ProfileFilterPostgres from '../../database/postgres/dataFilter/profileFilter'
+import ProfileControllerMongo from '../../database/mongo/controller/profileController'
+import ProfileControllerPostgres from '../../database/postgres/controller/profileController'
 import cookieSession from 'cookie-session'
 
 const profileRouter = express.Router()
@@ -30,8 +30,8 @@ const runDBSearch = (DBName) => {
             "/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                const profileFilterMongo = new ProfileFilterMongo(request, response)
-                profileFilterMongo.updateAccountDataCollection()
+                const profileControllerMongo = new ProfileControllerMongo(request, response)
+                profileControllerMongo.updateAccountDataCollection()
             }
         )
 
@@ -41,8 +41,8 @@ const runDBSearch = (DBName) => {
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
-                    const profileFilterMongo = new ProfileFilterPostgres(request, response)
-                    profileFilterMongo.updateAccountPasswordCollection()
+                    const profileControllerMongo = new ProfileControllerPostgres(request, response)
+                    profileControllerMongo.updateAccountPasswordCollection()
                 } else {
                     response.send('You are unauthenticated')
                 }

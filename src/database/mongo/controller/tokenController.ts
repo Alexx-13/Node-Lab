@@ -4,7 +4,7 @@ const fs = require('fs')
 const randtoken = require('rand-token')
 import db from '../../../app'
 
-interface ITokenFilterMongo {
+interface ITokenControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -21,7 +21,7 @@ interface ITokenFilterMongo {
     updateToken()
 }
 
-export default class TokenFilterMongo implements ITokenFilterMongo {
+export default class TokenControllerMongo implements ITokenControllerMongo {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'

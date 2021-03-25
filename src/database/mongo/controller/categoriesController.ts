@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-interface ICategoriesFilterMongo {
+interface ICategoriesControllerMongo {
     request: Request
     response: Response
     includeProducts?: boolean | undefined
@@ -11,7 +11,7 @@ interface ICategoriesFilterMongo {
     collectionName: string
 }
 
-export default class CategoriesFilterMongo implements ICategoriesFilterMongo {
+export default class CategoriesControllerMongo implements ICategoriesControllerMongo {
     readonly request: Request
     readonly response: Response
     public includeProducts: boolean | undefined

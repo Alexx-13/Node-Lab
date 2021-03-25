@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-interface ICategoriesFilterPostgres {
+interface ICategoriesControllerPostgres {
     request: Request
     response: Response
     id: number
@@ -12,7 +12,7 @@ interface ICategoriesFilterPostgres {
     collectionName: string
 }
 
-export default class CategoriesFilterPostgres implements ICategoriesFilterPostgres {
+export default class CategoriesControllerPostgres implements ICategoriesControllerPostgres {
     readonly request: Request
     readonly response: Response
     public id

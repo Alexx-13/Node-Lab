@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-interface IAdminFilterMongo {
-    getProductId()
+interface IAdminControllerMongo {
+    getCategoriesId()
     getSearchByIdQuery()
     makeDBSearchById()
     makeDBPost()
@@ -13,12 +13,12 @@ interface IAdminFilterMongo {
     makeDBPathcById()
 }
 
-export default class AdminFilterMongo implements IAdminFilterMongo{
+export default class AdminControllerMongo implements IAdminControllerMongo{
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'products'
-    public productId: string | undefined
+    public collectionName = 'categories'
+    public categoriesId: string | undefined
 
     constructor(request, response){
         this.request = request
@@ -26,9 +26,9 @@ export default class AdminFilterMongo implements IAdminFilterMongo{
         this.requestStr = request.query
     }
 
-    getProductId(){
+    getCategoriesId(){
         try{
-            this.productId = this.request.params.id
+            this.categoriesId = this.request.params.id
         } catch(err){
             throw new err
         }
@@ -36,7 +36,7 @@ export default class AdminFilterMongo implements IAdminFilterMongo{
 
     getSearchByIdQuery(){
         try{
-            return { _id: this.getProductId() }
+            return { _id: this.getCategoriesId() }
         } catch(err){
             throw new err
         }
@@ -68,7 +68,7 @@ export default class AdminFilterMongo implements IAdminFilterMongo{
 
     getDeleteByIdQuery(){
         try{
-            return { _id: this.getProductId() }
+            return { _id: this.getCategoriesId() }
         } catch(err){
             throw new err
         }
@@ -88,7 +88,7 @@ export default class AdminFilterMongo implements IAdminFilterMongo{
     
     getDBPatchByIdQuery(){
         try{
-            return { _id: this.getProductId(), $set: this.requestStr }
+            return { _id: this.getCategoriesId(), $set: this.requestStr }
         } catch(err){
             throw new err
         }

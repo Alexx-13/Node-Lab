@@ -2,24 +2,19 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-// interface IAdminFilterMongo {
+// interface IAdminControllerMongo {
 
 // }
 
-export default class AdminFilterPostgres {
+export default class AdminControllerPostgres {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'products'
-    public productId: string | undefined
+    public collectionName = 'categories'
+    public categoriesId: string | undefined
     public finalQuery = {
-        user_name: '',
-        user_role: '',
-        user_password: '',
-        user_first_name: '',
-        user_last_name: '',
-        user_access_token: '',
-        user_refresh_token: ''
+        id: '',
+        displayName: ''
     }
 
     constructor(request, response){
@@ -29,9 +24,9 @@ export default class AdminFilterPostgres {
     }
     
 
-    getProductId(){
+    getCategoriesId(){
         try{
-            this.productId = this.request.params.id
+            return this.categoriesId = this.request.params.id
         } catch(err){
             throw new err
         }
@@ -39,7 +34,7 @@ export default class AdminFilterPostgres {
 
     getSearchByIdQuery(){
         try{
-            return `SELECT * FROM ${this.collectionName} WHERE id = ${this.getProductId}`
+            return `SELECT * FROM ${this.collectionName} WHERE id = ${this.getCategoriesId}`
         } catch(err){
             throw new err
         }
@@ -60,13 +55,8 @@ export default class AdminFilterPostgres {
     getPostByIdQuery(){
         try{
             this.finalQuery = {
-                user_name: this.requestStr.user_name,
-                user_role: this.requestStr.user_role,
-                user_password: this.requestStr.user_password,
-                user_first_name: this.requestStr.user_password,
-                user_last_name: this.requestStr.user_last_name,
-                user_access_token: this.requestStr.user_access_token,
-                user_refresh_token: this.requestStr.user_refresh_token
+                id: this.getCategoriesId(),
+                displayName: this.requestStr.displayName
             }
 
             return `INSERT INTO ${this.collectionName} 
@@ -94,7 +84,7 @@ export default class AdminFilterPostgres {
 
     getDeleteByIdQuery(){
         try{
-            return `DELETE FROM ${this.collectionName} WHERE id = ${this.getProductId()}`
+            return `DELETE FROM ${this.collectionName} WHERE id = ${this.getCategoriesId()}`
         } catch(err){
             throw new err
         }

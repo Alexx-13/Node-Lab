@@ -5,7 +5,7 @@ import randtoken from 'rand-token'
 import fs from 'fs'
 import db from '../../../app'
 
-interface IRegisterFilterPostgres {
+interface IRegisterControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -19,6 +19,7 @@ interface IRegisterFilterPostgres {
     getUserName()
     getUserFirstName()
     getUserLastName()
+    getUserRole()
     getUserUnhashedPassword()
     setHashedUserPassword()
     getHashedUserPassword()
@@ -27,7 +28,7 @@ interface IRegisterFilterPostgres {
     setAccountCollection()
 }
 
-export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
+export default class RegisterControllerMongo implements IRegisterControllerMongo {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'
@@ -74,14 +75,6 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
         }
     }
 
-    getUserRole(){
-        try{
-            return this.requestStr.user_role
-        } catch(err){
-            throw new err
-        }
-    }
-
     getUserFirstName(){
         try{
             return this.requestStr.user_first_name
@@ -93,6 +86,14 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     getUserLastName(){
         try{
             return this.requestStr.user_last_name
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getUserRole(){
+        try{
+            return this.requestStr.user_role
         } catch(err){
             throw new err
         }
@@ -128,7 +129,7 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     setFinalQuery() {
         try{
             if(this.getUserRole() === 'admin' || this.getUserRole() === 'buyer'){
-                this.finalQuery = {
+                return this.finalQuery = {
                     user_name: this.getUserName(),
                     user_role: this.getUserRole(),
                     user_password: this.getUserUnhashedPassword(),
@@ -137,15 +138,10 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
                     user_access_token: this.handleAccessToken(),
                     user_refresh_token: this.handleRefreshToken()
                 }
-    
-                return `INSERT INTO ${this.collectionName} 
-                    (${Object.keys(this.finalQuery).join()})
-                    VALUES 
-                    (${Object.values(this.finalQuery).join()})
-                `
             } else {
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
+           
         } catch (err){
             throw new err
         }
@@ -161,11 +157,9 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
 
     setAccountCollection(){
         try{
-            db.default.query(this.getFinalQuery(), (err, results) => {
-                if (err){
+            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, results) => {
+                if(err){
                     throw new err
-                } else if (!results.row){
-                    this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
                     const jsonData = {
                         USER_ACCESS_TOKEN: this.accessToken,
@@ -178,7 +172,8 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
                         if(err){
                             this.response.send(HTTPStatusCodes.NOT_FOUND)
                         } else {
-                            this.response.send('Account was successfully created')
+                            this.request.session.isAuth = true
+                            this.response.send('Account was successfully created' + this.request.session.isAuth)
                         }
                     })
                 }

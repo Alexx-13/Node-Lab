@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-interface IProductsFilterPostgres {
+interface IProductsControllerPostgres {
     request: Request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -16,7 +16,7 @@ interface IProductsFilterPostgres {
     sortBy?: string
 }
 
-export default class ProductsFilterPostgres implements IProductsFilterPostgres {
+export default class ProductsControllerPostgres implements IProductsControllerPostgres {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }

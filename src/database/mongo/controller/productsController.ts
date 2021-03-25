@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../httpStatus'
 import db from '../../../app'
 
-interface IProductsFilterMongo {
+interface IProductsControllerMongo {
     request: Request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -15,7 +15,7 @@ interface IProductsFilterMongo {
     sortBy?: string | undefined
 }
 
-export default class ProductsFilterMongo implements IProductsFilterMongo {
+export default class ProductsControllerMongo implements IProductsControllerMongo {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
