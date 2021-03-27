@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
 interface ICategoriesControllerPostgres {
@@ -18,9 +18,9 @@ export default class CategoriesControllerPostgres implements ICategoriesControll
     public id
     public includeProducts
     public includeTop3Products
-    public finalQuery: string = `SELECT * FROM categories`
+    public finalQuery = `SELECT * FROM categories`
     public requestStr: { [queryParam: string]: string }
-    public collectionName: string = 'categories'
+    public collectionName = 'categories'
 
       
     constructor(request, response){

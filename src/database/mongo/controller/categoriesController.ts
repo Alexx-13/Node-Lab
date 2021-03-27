@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
 interface ICategoriesControllerMongo {
@@ -17,7 +17,7 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
     public includeProducts: boolean | undefined
     public includeTop3Products: number | undefined
     public requestStr: { [queryParam: string]: string }
-    public collectionName: string = 'categories'
+    public collectionName = 'categories'
     
     constructor(request, response){
         this.request = request

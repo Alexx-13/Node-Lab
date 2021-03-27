@@ -25,3 +25,9 @@
 [2021-3-24 16:46:43] GET:/admin/products/1 200 0.003 ms
 [2021-3-24 16:47:46] GET:/admin/products/1 200 0.037 ms
 [2021-3-24 16:48:30] GET:/admin/products/1 200 0.045 ms
+[2021-3-27 12:41:4] GET:/ 200 0.093 ms
+[2021-3-27 12:41:42] GET:/register 200 0.056 ms
+[2021-3-27 12:41:46] GET:/favicon.ico 200 0.002 ms
+[2021-3-27 12:42:27] POST:/register 200 0.035 ms
+[2021-3-27 12:42:53] GET:/register 200 0.041 ms
+[2021-3-27 12:42:55] POST:/register 200 0.003 ms

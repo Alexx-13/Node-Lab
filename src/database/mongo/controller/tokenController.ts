@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 const fs = require('fs')
 const randtoken = require('rand-token')
 import db from '../../../app'

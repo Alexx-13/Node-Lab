@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import db from '../../../app'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import util from 'util'
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
 interface IProductsControllerMongo {
@@ -58,7 +58,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     makeDBRatingUpdate(){
         db.default.collection(this.collectionName).find(this.getUserRatingQuery()).toArray((err, results) => {
             if (err){
-                throw err;
+                throw err
             } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.NOT_FOUND)
             } else {

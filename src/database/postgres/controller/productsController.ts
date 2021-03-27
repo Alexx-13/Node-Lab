@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
 interface IProductsControllerPostgres {
@@ -24,6 +24,7 @@ export default class ProductsControllerPostgres implements IProductsControllerPo
     readonly paginationCondition: string = `AND id > 20 LIMIT 20`
     readonly customIndex = `CREATE INDEX idx_displayName on products(displayName)`
     public finalQuery = `SELECT * FROM products`
+    public userRating: number | undefined
     public dipslayName
     public minRating
     public price
@@ -155,4 +156,32 @@ export default class ProductsControllerPostgres implements IProductsControllerPo
         return this.customIndex + this.finalQuery
     }
 
+    getUserRating(){
+        try{
+            const rating = parseInt(this.request.params.value)
+
+            if(rating <= 10 && rating >= 1){
+                this.userRating = rating
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBRatingUpdate(){
+        db.default.query(
+            `INSERT INTO ${this.collectionName} 
+            (totalRating)
+            VALUES 
+            (${this.getUserRating()})`, 
+        (err, results) => {
+            if (err) {
+                throw new err
+            } else {
+                this.response.send(HTTPStatusCodes.OK)
+            }
+        })
+    }
 }

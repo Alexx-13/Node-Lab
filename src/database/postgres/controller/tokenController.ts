@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import randtoken from 'rand-token'
 import db from '../../../app'

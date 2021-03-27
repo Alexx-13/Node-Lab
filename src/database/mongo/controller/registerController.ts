@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes, UserRole } from '../../../enum'
 import bcrypt from "bcrypt"
 import randtoken from 'rand-token'
 import fs from 'fs'
@@ -128,7 +128,7 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
 
     setFinalQuery() {
         try{
-            if(this.getUserRole() === 'admin' || this.getUserRole() === 'buyer'){
+            if(this.getUserRole() === UserRole.admin|| this.getUserRole() === UserRole.buyer){
                 return this.finalQuery = {
                     user_name: this.getUserName(),
                     user_role: this.getUserRole(),
