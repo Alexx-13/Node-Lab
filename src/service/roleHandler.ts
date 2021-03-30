@@ -1,7 +1,7 @@
 import { db } from '../app'
 import { HTTPStatusCodes } from '../enum'
 
-export default class SessionHandler {
+export default class RoleHandler {
     readonly request
     readonly response
     public requestStr: { [queryParam: string]: string }

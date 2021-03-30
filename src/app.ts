@@ -1,5 +1,10 @@
 import { Server } from "express"
-import { logger } from './service'
+import { 
+  logger,
+  collectionCleanUpHandlerMongo, 
+  collectionCleanUpHandlerPostgres
+} from './service'
+
 import router from "./routes"
 import "reflect-metadata"
 import express from 'express'
@@ -12,8 +17,10 @@ let db
 
 if (process.argv[2] === 'mongo'){
   db = require('./database/mongo')
+  collectionCleanUpHandlerMongo(db, 'lastRatings')
 } else if (process.argv[2] === 'postgres'){
   db = require('./database/postgres')
+  collectionCleanUpHandlerPostgres(db, 'lastRatings')
 } else {
   console.log('DB was not selected')
 }
