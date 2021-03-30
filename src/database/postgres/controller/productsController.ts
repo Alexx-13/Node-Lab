@@ -21,6 +21,7 @@ export default class ProductsControllerPostgres implements IProductsControllerPo
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
     public collectionName = 'products'
+    public collectionNameRatings = 'lastRatings'
     readonly paginationCondition: string = `AND id > 20 LIMIT 20`
     readonly customIndex = `CREATE INDEX idx_displayName on products(displayName)`
     public finalQuery = `SELECT * FROM products`
@@ -190,6 +191,21 @@ export default class ProductsControllerPostgres implements IProductsControllerPo
                       console.log('WebScoket in products controller disconnected!')
                     })
                 })
+
+                db.default.query(
+                    `INSERT INTO ${this.collectionNameRatings}
+                    (rating)
+                    VALUES
+                    (${results})
+                    `,
+                    (err, results) => {
+                        if (err) {
+                            throw new err
+                        } else {
+                            this.response.send(HTTPStatusCodes.OK)
+                        }
+                    }
+                )
             }
         })
     }
