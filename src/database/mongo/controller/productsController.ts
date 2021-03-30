@@ -20,6 +20,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
     public collectionName = 'products'
+    public collectionNameRatings = 'lastRatings'
     public finalQuery
     public dipslayName: string | object | undefined
     public userRating: number | undefined
@@ -78,6 +79,14 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
                             socket.on('disconnect', () => {
                               console.log('WebScoket in products controller disconnected!')
                             })
+                        })
+
+                        db.default.collection(this.collectionNameRatings).insertOne(results, (err, results) => {
+                            if (err) {
+                                throw new err
+                            } else {
+                                this.response.send(HTTPStatusCodes.OK)
+                            }
                         })
                     }
                 })
