@@ -22,6 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
     "mongoose": "^5.11.14",
+    "node-cron": "^3.0.0",
     "passport": "^0.4.1",
     "pg": "^8.5.1",
     "postgres-pool": "^3.2.7",
