@@ -1,4 +1,4 @@
-import db from '../app'
+import { db } from '../app'
 import { HTTPStatusCodes } from '../enum'
 
 export default class SessionHandler {

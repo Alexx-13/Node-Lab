@@ -3,7 +3,7 @@ import { HTTPStatusCodes, UserRole } from '../../../enum'
 import bcrypt from "bcrypt"
 import randtoken from 'rand-token'
 import fs from 'fs'
-import db from '../../../app'
+import { db } from '../../../app'
 
 interface IRegisterControllerMongo {
     request

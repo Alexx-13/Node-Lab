@@ -1,8 +1,12 @@
-import { Express, Server } from "express"
+import { Server } from "express"
 import { logger } from './service'
 import router from "./routes"
 import "reflect-metadata"
+import express from 'express'
+const socket = require('socket.io')
 
+const app: Server = express()
+const PORT: number | string = 3000 || process.env.PORT
 
 let db
 
@@ -14,15 +18,17 @@ if (process.argv[2] === 'mongo'){
   console.log('DB was not selected')
 }
 
-const express: Express = require('express')
-const app: Server = express()
-const PORT: number | string = 3000 || process.env.PORT
+app.get("/", (request, response) => {
+  response.sendFile((__dirname + '/client/client.html'))
+})
 
 app.use(logger)
 app.use(router)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`The server has been launched at port: ${PORT}`)
 })
 
-export default db
+const io = socket(server)
+
+export { db, io }

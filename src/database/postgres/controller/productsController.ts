@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../enum'
-import db from '../../../app'
+import { db, io } from '../../../app'
 
 interface IProductsControllerPostgres {
     request: Request
@@ -181,6 +181,15 @@ export default class ProductsControllerPostgres implements IProductsControllerPo
                 throw new err
             } else {
                 this.response.send(HTTPStatusCodes.OK)
+                io.sockets.on('connection', (socket) => {
+                    console.log('WebScoket in products controller connected!');
+                  
+                    socket.emit('rating', results)
+                  
+                    socket.on('disconnect', () => {
+                      console.log('WebScoket in products controller disconnected!')
+                    })
+                })
             }
         })
     }

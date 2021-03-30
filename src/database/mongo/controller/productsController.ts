@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express'
 import { HTTPStatusCodes } from '../../../enum'
-import db from '../../../app'
+import { db, io } from '../../../app'
 
 interface IProductsControllerMongo {
     request: Request
@@ -70,6 +70,15 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
                         throw new err
                     } else {
                         this.response.send(HTTPStatusCodes.OK)
+                        io.sockets.on('connection', (socket) => {
+                            console.log('WebScoket in products controller connected!');
+                          
+                            socket.emit('rating', results)
+                          
+                            socket.on('disconnect', () => {
+                              console.log('WebScoket in products controller disconnected!')
+                            })
+                        })
                     }
                 })
             }
@@ -189,7 +198,6 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     makeDBSearch(){
         this.createFinalQuery()
         this.createSortByQuery()
-
         if(this.getSortByQuery()){
             db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, results) => {
                 if (err){

@@ -2,7 +2,7 @@ import { Response } from 'express'
 import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import randtoken from 'rand-token'
-import db from '../../../app'
+import { db } from '../../../app'
 
 interface ITokenControllerPostgres {
     request
