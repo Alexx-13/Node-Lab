@@ -1,10 +1,10 @@
 import { Response } from 'express'
 import db from '../../../app'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import util from 'util'
 
-interface IProfileFilterMongo {
+interface IProfileControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -25,7 +25,7 @@ interface IProfileFilterMongo {
     updateAccountPasswordCollection()
 }
 
-export default class ProfileFilterMongo implements IProfileFilterMongo {
+export default class ProfileControllerMongo implements IProfileControllerMongo {
     readonly request
     readonly response
     readonly collectionName: string = 'account'
@@ -44,7 +44,7 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     async getLocalToken(){
         try{
             const readFileContent = util.promisify(fs.readFile)
-            const data = await readFileContent('.tokens.json')
+            const data = await readFileContent('.tokens.json').toString()
 
             if(JSON.parse(data).USER_ACCESS_TOKEN){
                 return JSON.parse(data).USER_ACCESS_TOKEN
@@ -118,13 +118,13 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
                 const newData = { $set: { user_password: this.getNewPassword() } }
     
                 if(this.getOldPassword() && this.getNewPassword()){
-                    db.default.collection(this.collectionName).find(oldData).toArray((err, result) => {
+                    db.default.collection(this.collectionName).find(oldData).toArray((err, results) => {
                         if(err){
                             throw new err
-                        } else if(result.length === 0){
+                        } else if(results.length === 0){
                             this.response.send('Incorrect data')
                         } else {
-                            db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
+                            db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                                 if(err){
                                     throw new err
                                 } else {
@@ -144,16 +144,16 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
         try{
             console.log(this.isAuth)
             if(this.getUserName() && this.getFirstName() && this.getLastName()){
-                db.default.collection(this.collectionName).find(this.getLocalToken()).toArray((err, result) => {
+                db.default.collection(this.collectionName).find(this.getLocalToken()).toArray((err, results) => {
                     if(err){
                         throw new err
-                    } else if(result.length === 0){
+                    } else if(results.length === 0){
                         this.response.send('Incorrect data')
                     } else {
                         const oldData: object = {
-                            user_name: result[0].user_name,
-                            user_first_name: result[0].user_first_name,
-                            user_last_name: result[0].user_last_name
+                            user_name: results[0].user_name,
+                            user_first_name: results[0].user_first_name,
+                            user_last_name: results[0].user_last_name
                         }
                         const newData: object = { 
                             user_name: this.getUserName(),
@@ -161,7 +161,7 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
                             user_last_name: this.getLastName()
                         }
 
-                        db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
+                        db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                             if(err){
                                 throw new err
                             } else {

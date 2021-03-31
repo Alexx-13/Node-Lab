@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
-import TokenFilterMongo from '../../database/mongo/dataFilter/tokenFilter'
-import TokenFilterPostgres from '../../database/postgres/dataFilter/tokenFilter'
+import TokenControllerMongo from '../../database/mongo/controller/tokenController'
+import TokenControllerPostgres from '../../database/postgres/controller/tokenController'
 const tokenRouter = express.Router()
 
 import bodyParser from 'body-parser'
@@ -16,8 +16,8 @@ const runDBSearch = (DBName) => {
         tokenRouter.post("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                const tokenFilter = new TokenFilterMongo(request, response)
-                tokenFilter.updateToken()
+                const tokenController = new TokenControllerMongo(request, response)
+                tokenController.updateToken()
             }
         )
     } else if (DBName === 'postgres'){
@@ -29,8 +29,8 @@ const runDBSearch = (DBName) => {
         tokenRouter.use("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                const tokenFilter = new TokenFilterPostgres(request, response)
-                tokenFilter.updateToken()
+                const tokenController = new TokenControllerPostgres(request, response)
+                tokenController.updateToken()
             }
         )
     }

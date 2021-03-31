@@ -1,10 +1,10 @@
 import { Response } from 'express'
 import db from '../../../app'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import util from 'util'
 
-interface IProfileFilterMongo {
+interface IProfileControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -23,7 +23,7 @@ interface IProfileFilterMongo {
     updateAccountPasswordCollection()
 }
 
-export default class ProfileFilterMongo implements IProfileFilterMongo {
+export default class ProfileControllerMongo implements IProfileControllerMongo {
     readonly request
     readonly response
     readonly collectionName: string = 'account'
@@ -38,7 +38,7 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     async getLocalToken(){
         try{
             const readFileContent = util.promisify(fs.readFile)
-            const data = await readFileContent('.tokens.json')
+            const data = await readFileContent('.tokens.json').toString()
 
             if(JSON.parse(data).USER_ACCESS_TOKEN){
                 return JSON.parse(data).USER_ACCESS_TOKEN
@@ -130,10 +130,10 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     updateAccountPasswordCollection(){
         try {
             if(this.getNewPassword() && this.getOldPassword()){
-                db.default.query(this.getPasswordFinalQuery(), (err, result) => {
+                db.default.query(this.getPasswordFinalQuery(), (err, results) => {
                     if(err){
                         throw new err
-                    } else if (!result.row) {
+                    } else if (!results.row) {
                         this.response.send(HTTPStatusCodes.BAD_REQUEST)
                     }
                 })
@@ -146,10 +146,10 @@ export default class ProfileFilterMongo implements IProfileFilterMongo {
     updateAccountDataCollection(){
         try{
             if(this.getUserName() && this.getFirstName() && this.getLastName()){
-                db.default.query(this.getDataFinalQuery(), (err, result) => {
+                db.default.query(this.getDataFinalQuery(), (err, results) => {
                     if(err){
                         throw new err
-                    } else if (!result.row){
+                    } else if (!results.row){
                         this.response.send(HTTPStatusCodes.BAD_REQUEST)
                     } else {
                         this.response.send('Profile was successfully updated')

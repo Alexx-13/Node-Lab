@@ -1,18 +1,18 @@
 import express, { Request, Response } from 'express'
-import CategoriesFilterPostgres from '../database/postgres/dataFilter/categoriesFilter'
-import CategoriesFilterMongo from '../database/mongo/dataFilter/categoriesFilter'
+import CategoriesControllerMongo from '../database/mongo/controller/categoriesController'
+import CategoriesControllerPostgres from '../database/postgres/controller/categoriesController'
 const categoriesRouter = express.Router();
 
 const runDBSearch = (DBName) => {
     if(DBName === 'mongo'){
         categoriesRouter.use("/", (request: Request, response: Response) => {
-            const categoriesFilter = new CategoriesFilterMongo(request, response)
-            categoriesFilter.makeDBSearch()
+            const categoriesController = new CategoriesControllerMongo(request, response)
+            categoriesController.makeDBSearch()
         })
     } else if (DBName === 'postgres'){
         categoriesRouter.use("/", (request: Request, response: Response) => {
-            const categoriesFilter = new CategoriesFilterPostgres(request, response)
-            categoriesFilter.makeDBSearch()
+            const categoriesController = new CategoriesControllerPostgres(request, response)
+            categoriesController.makeDBSearch()
         })
     }
 }

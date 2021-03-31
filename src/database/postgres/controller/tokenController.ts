@@ -1,10 +1,10 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import fs from 'fs'
 import randtoken from 'rand-token'
 import db from '../../../app'
 
-interface ITokenFilterPostgres {
+interface ITokenControllerPostgres {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -20,7 +20,7 @@ interface ITokenFilterPostgres {
     updateToken()
 }
 
-export default class TokenFilterPostgres implements ITokenFilterPostgres {
+export default class TokenControllerPostgres implements ITokenControllerPostgres {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'
@@ -79,10 +79,10 @@ export default class TokenFilterPostgres implements ITokenFilterPostgres {
 
     updateToken(){
         try{
-            db.default.query(this.getFindQuery(), (err, result) => {
+            db.default.query(this.getFindQuery(), (err, results) => {
                 if (err){
                     throw new err
-                } else if (!result.row){
+                } else if (!results.row){
                     this.response.send('Username or token incorrect')
                 } else {
                     const jsonData = {

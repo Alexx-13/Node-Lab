@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
-import AuthenticateFilterMongo from '../../database/mongo/dataFilter/authenticateFilter'
-import AuthenticateFilterPostgres from '../../database/postgres/dataFilter/authenticateFilter'
+import AuthenticateControllerMongo from '../../database/mongo/controller/authenticateController'
+import AuthenticateControllerPostgres from '../../database/postgres/controller/authenticateController'
 const authenticateRouter = express.Router()
 import bodyParser from 'body-parser'
 
@@ -14,8 +14,8 @@ const runDBSearch = (DBName) => {
         authenticateRouter.post("/", 
         bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                const authenticateFilter = new AuthenticateFilterMongo(request, response)
-                authenticateFilter.getToken()
+                const authenticateController = new AuthenticateControllerMongo(request, response)
+                authenticateController.getToken()
             }
         )
 
@@ -28,8 +28,8 @@ const runDBSearch = (DBName) => {
         authenticateRouter.use("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
-                const authenticateFilter = new AuthenticateFilterPostgres(request, response)
-                authenticateFilter.getToken()
+                const authenticateController = new AuthenticateControllerPostgres(request, response)
+                authenticateController.getToken()
             }
         )
     }

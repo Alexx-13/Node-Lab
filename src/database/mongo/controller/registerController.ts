@@ -1,11 +1,11 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes, UserRole } from '../../../enum'
 import bcrypt from "bcrypt"
 import randtoken from 'rand-token'
 import fs from 'fs'
 import db from '../../../app'
 
-interface IRegisterFilterPostgres {
+interface IRegisterControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -19,6 +19,7 @@ interface IRegisterFilterPostgres {
     getUserName()
     getUserFirstName()
     getUserLastName()
+    getUserRole()
     getUserUnhashedPassword()
     setHashedUserPassword()
     getHashedUserPassword()
@@ -27,7 +28,7 @@ interface IRegisterFilterPostgres {
     setAccountCollection()
 }
 
-export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
+export default class RegisterControllerMongo implements IRegisterControllerMongo {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'
@@ -35,6 +36,7 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
     refreshToken
     public finalQuery = {
         user_name: '',
+        user_role: '',
         user_password: '',
         user_first_name: '',
         user_last_name: '',
@@ -89,6 +91,14 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
         }
     }
 
+    getUserRole(){
+        try{
+            return this.requestStr.user_role
+        } catch(err){
+            throw new err
+        }
+    }
+
     getUserUnhashedPassword() { 
         try{
             return this.requestStr.user_password
@@ -118,20 +128,20 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
 
     setFinalQuery() {
         try{
-            this.finalQuery = {
-                user_name: this.getUserName(),
-                user_password: this.getUserUnhashedPassword(),
-                user_first_name: this.getUserFirstName(),
-                user_last_name: this.getUserLastName(),
-                user_access_token: this.handleAccessToken(),
-                user_refresh_token: this.handleRefreshToken()
+            if(this.getUserRole() === UserRole.admin|| this.getUserRole() === UserRole.buyer){
+                return this.finalQuery = {
+                    user_name: this.getUserName(),
+                    user_role: this.getUserRole(),
+                    user_password: this.getUserUnhashedPassword(),
+                    user_first_name: this.getUserFirstName(),
+                    user_last_name: this.getUserLastName(),
+                    user_access_token: this.handleAccessToken(),
+                    user_refresh_token: this.handleRefreshToken()
+                }
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
-
-            return `INSERT INTO ${this.collectionName} 
-                (${Object.keys(this.finalQuery).join()})
-                VALUES 
-                (${Object.values(this.finalQuery).join()})
-            `
+           
         } catch (err){
             throw new err
         }
@@ -147,11 +157,9 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
 
     setAccountCollection(){
         try{
-            db.default.query(this.getFinalQuery(), (err, results) => {
-                if (err){
+            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, results) => {
+                if(err){
                     throw new err
-                } else if (!results.row){
-                    this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
                     const jsonData = {
                         USER_ACCESS_TOKEN: this.accessToken,
@@ -162,9 +170,10 @@ export default class RegisterFilterPostgres implements IRegisterFilterPostgres {
                         JSON.stringify(jsonData),
                         (err) => {
                         if(err){
-                            throw new err
+                            this.response.send(HTTPStatusCodes.NOT_FOUND)
                         } else {
-                            this.response.send('Account was successfully created')
+                            this.request.session.isAuth = true
+                            this.response.send('Account was successfully created' + this.request.session.isAuth)
                         }
                     })
                 }

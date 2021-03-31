@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
-interface ICategoriesFilterMongo {
+interface ICategoriesControllerMongo {
     request: Request
     response: Response
     includeProducts?: boolean | undefined
@@ -11,13 +11,13 @@ interface ICategoriesFilterMongo {
     collectionName: string
 }
 
-export default class CategoriesFilterMongo implements ICategoriesFilterMongo {
+export default class CategoriesControllerMongo implements ICategoriesControllerMongo {
     readonly request: Request
     readonly response: Response
     public includeProducts: boolean | undefined
     public includeTop3Products: number | undefined
     public requestStr: { [queryParam: string]: string }
-    public collectionName: string = 'categories'
+    public collectionName = 'categories'
     
     constructor(request, response){
         this.request = request
@@ -57,9 +57,9 @@ export default class CategoriesFilterMongo implements ICategoriesFilterMongo {
 
     makeDBSearch(){
         if(Object.keys(this.requestStr).length === 0){
-            db.default.collection(this.collectionName).find({}).toArray((err, result) => {
+            db.default.collection(this.collectionName).find({}).toArray((err, results) => {
                 if (err) throw err
-                return this.response.send(JSON.stringify(result))
+                return this.response.send(JSON.stringify(results))
             })
         } else {
         this.getIncludeProducts()
@@ -78,23 +78,23 @@ export default class CategoriesFilterMongo implements ICategoriesFilterMongo {
                                 as: 'products'
                             }
                         }
-                    ]).toArray((err, result) => {
+                    ]).toArray((err, results) => {
                         if (err){
                             throw err
-                        } else if(result.length === 0){
+                        } else if(results.length === 0){
                             this.response.send(HTTPStatusCodes.NOT_FOUND);
                         } else {
-                            return this.response.send(JSON.stringify(result))
+                            return this.response.send(JSON.stringify(results))
                         }
                     })
                 } else if(this.includeProducts === undefined){
-                    db.default.collection(this.collectionName).find({}).toArray((err, result) => {
+                    db.default.collection(this.collectionName).find({}).toArray((err, results) => {
                         if (err){
                             throw err
-                        } else if(result.length === 0){
+                        } else if(results.length === 0){
                             this.response.send(HTTPStatusCodes.NOT_FOUND);
                         } else {
-                            return this.response.send(JSON.stringify(result))
+                            return this.response.send(JSON.stringify(results))
                         }
                     })
                 }

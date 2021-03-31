@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
-interface IAuthenticateFilterPostgres {
+interface IAuthenticateControllerPostgres {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -16,7 +16,7 @@ interface IAuthenticateFilterPostgres {
     getToken()
 }
 
-export default class AuthenticateFilterPostgres implements IAuthenticateFilterPostgres {
+export default class AuthenticateControllerPostgres implements IAuthenticateControllerPostgres {
     readonly request
     readonly response
     readonly collectionName: string = 'account'

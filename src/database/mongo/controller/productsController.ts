@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 import db from '../../../app'
 
-interface IProductsFilterMongo {
+interface IProductsControllerMongo {
     request: Request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -14,13 +15,14 @@ interface IProductsFilterMongo {
     sortBy?: string | undefined
 }
 
-export default class ProductsFilterMongo implements IProductsFilterMongo {
+export default class ProductsControllerMongo implements IProductsControllerMongo {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
     public collectionName = 'products'
     public finalQuery
     public dipslayName: string | object | undefined
+    public userRating: number | undefined
     public minRating: number | object |  undefined
     public price: string | object | undefined
     public sortBy: string | undefined
@@ -29,6 +31,49 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
         this.request = request
         this.response = response
         this.requestStr = request.query
+    }
+
+    getUserRating(){
+        try{
+            const rating = parseInt(this.request.params.value)
+
+            if(rating <= 10 && rating >= 1){
+                this.userRating = rating
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    getUserRatingQuery(){
+        try{
+          return { totalRating: this.getUserRating() }
+        } catch(err){
+            throw new err
+        }
+    }
+
+    makeDBRatingUpdate(){
+        db.default.collection(this.collectionName).find(this.getUserRatingQuery()).toArray((err, results) => {
+            if (err){
+                throw err
+            } else if(results.length === 0){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                const oldData = { totalRating:  results[0].totalRating }
+                const newData = { $set: this.getUserRatingQuery() }
+
+                db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
+                    if (err) {
+                        throw new err
+                    } else {
+                        this.response.send(HTTPStatusCodes.OK)
+                    }
+                })
+            }
+        })
     }
 
     getDisplayName(){
@@ -146,23 +191,23 @@ export default class ProductsFilterMongo implements IProductsFilterMongo {
         this.createSortByQuery()
 
         if(this.getSortByQuery()){
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, results) => {
                 if (err){
                     throw err;
-                } else if(result.length === 0){
+                } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    this.response.send(result)
+                    this.response.send(results)
                 }
             })    
         } else {
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, results) => {
                 if (err){
                     throw err;
-                } else if(result.length === 0){
+                } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    this.response.send(result)
+                    this.response.send(results)
                 }
             })
         }  

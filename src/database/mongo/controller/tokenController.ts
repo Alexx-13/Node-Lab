@@ -1,10 +1,10 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../httpStatus'
+import { HTTPStatusCodes } from '../../../enum'
 const fs = require('fs')
 const randtoken = require('rand-token')
 import db from '../../../app'
 
-interface ITokenFilterMongo {
+interface ITokenControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
@@ -21,7 +21,7 @@ interface ITokenFilterMongo {
     updateToken()
 }
 
-export default class TokenFilterMongo implements ITokenFilterMongo {
+export default class TokenControllerMongo implements ITokenControllerMongo {
     readonly request
     readonly response: Response
     readonly collectionName: string = 'account'
@@ -86,16 +86,16 @@ export default class TokenFilterMongo implements ITokenFilterMongo {
         try{
             this.setFinalQuery()
 
-            db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, result) => {
+            db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, results) => {
                 if(err){
                     throw new err
-                } else if (result.length === 0) {
+                } else if (results.length === 0) {
                     this.response.send('Username or token incorrect')
                 } else {
-                    let oldData = { user_access_token:  result[0].user_access_token }
+                    let oldData = { user_access_token:  results[0].user_access_token }
                     let newData = { $set: { user_access_token:  this.handleAccessToken() } }
                     
-                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, result) => {
+                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                         if (err) {
                             throw new err
                         } else {
