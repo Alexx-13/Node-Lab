@@ -1,29 +1,887 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.0.0",
-        "title": "NodeJS Lab REST API",
-        "description": "The REST API app, made with Express, MongoDB, Postgres",
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        }
+      "title": "NodeJS Lab",
+      "version": "1.0.0"
     },
     "host": "localhost:3000",
     "basePath": "/",
-    "tags": [
-        {
-            "name": "Categories",
-            "description": "API for users in the system"
+    "paths": {
+      "/categories": {
+        "get": {
+          "tags": ["categories"],
+          "summary": "returns all categories",
+          "operationId": "categories",
+          "responses": {
+            "200": {
+              "description": "Successfully found categories",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "$ref": "#/definitions/Category"
+                }
+              }
+            },
+            "500": {
+              "description": "Failed to get categories"
+            }
+          }
         }
-    ],
-    "schemes": [
-        "get"
-    ],
-    "consumes": [
-        "application/json"
-    ],
-    "produces": [
-        "application/json"
-    ]
-}
+      },
+      "/categories/{id}": {
+        "get": {
+          "tags": ["categories"],
+          "summary": "returns category",
+          "operationId": "category",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of category that needs to be fetched",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "includeProducts",
+              "in": "query",
+              "description": "returns products related to category",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "name": "includeTop3Products",
+              "in": "query",
+              "description": "returns top 3 products related to category",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully found category",
+              "schema": {
+                "$ref": "#/definitions/Category"
+              }
+            },
+            "404": {
+              "description": "Failed to found category"
+            }
+          }
+        }
+      },
+      "/products": {
+        "get": {
+          "tags": ["products"],
+          "summary": "return all products",
+          "operationId": "products",
+          "parameters": [
+            {
+              "name": "product",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "totalRating": {
+                    "type": "number"
+                  },
+                  "sortBy": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "number"
+                  },
+                  "skip": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully found products",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            },
+            "500": {
+              "description": "Failed to get products"
+            }
+          }
+        }
+      },
+      "/product": {
+        "post": {
+          "tags": ["products"],
+          "summary": "creates new product",
+          "operationId": "create product",
+          "parameters": [
+            {
+              "name": "product",
+              "in": "body",
+              "description": "The product to create",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "categoryIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "totalRating": {
+                    "type": "number"
+                  },
+                  "price": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "return created product",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "400": {
+              "description": "Failed to add new product"
+            }
+          }
+        }
+      },
+      "/product/{id}/rate": {
+        "post": {
+          "tags": ["products"],
+          "summary": "rates product via passed id",
+          "operationId": "rate product",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be rated",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "rating",
+              "in": "body",
+              "description": "rating for product",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is buyer",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "successfully add rating"
+            },
+            "400": {
+              "description": "rating value should be from 1 to 10"
+            },
+            "500": {
+              "description": "failed to add rating"
+            }
+          }
+        }
+      },
+      "/product/{id}": {
+        "get": {
+          "tags": ["products"],
+          "summary": "returns product",
+          "operationId": "product",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be fetched",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully found product",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "Failed to found product"
+            }
+          }
+        },
+        "delete": {
+          "tags": ["products"],
+          "summary": "delete product via passed id",
+          "operationId": "delete product",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be deleted",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successfully delete product",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "400": {
+              "description": "failed to delete product"
+            }
+          }
+        }
+      },
+      "/register": {
+        "post": {
+          "tags": ["auth"],
+          "summary": "register new user",
+          "operationId": "register",
+          "parameters": [
+            {
+              "name": "user",
+              "in": "body",
+              "description": "User to register",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User registered successfully",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      },
+      "/authenticate": {
+        "post": {
+          "tags": ["auth"],
+          "summary": "authenticate user",
+          "operationId": "authenticate",
+          "parameters": [
+            {
+              "name": "user",
+              "in": "body",
+              "description": "User login info",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully authenticate",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accessToken": {
+                    "type": "string"
+                  },
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Username does not exist"
+            },
+            "400": {
+              "description": "Username or password incorrect"
+            }
+          }
+        }
+      },
+      "/token": {
+        "post": {
+          "tags": ["auth"],
+          "summary": "refresh access token",
+          "operationId": "refresh token",
+          "parameters": [
+            {
+              "name": "token",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accessToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "refresh token incorrect"
+            },
+            "401": {
+              "description": "refresh token not passed"
+            }
+          }
+        }
+      },
+      "/profile": {
+        "put": {
+          "tags": ["profile"],
+          "summary": "update profile info",
+          "operationId": "update profile",
+          "parameters": [
+            {
+              "name": "User",
+              "in": "body",
+              "description": "New user info",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for user verification",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "400": {
+              "description": "token not passed"
+            },
+            "403": {
+              "description": "incorrect token"
+            },
+            "404": {
+              "description": "user not found"
+            }
+          }
+        }
+      },
+      "/profile/password": {
+        "post": {
+          "tags": ["profile"],
+          "summary": "update password",
+          "operationId": "update password",
+          "parameters": [
+            {
+              "name": "Password",
+              "in": "body",
+              "description": "new password",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for user verification",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "password was updated"
+            },
+            "400": {
+              "description": "token not passed"
+            },
+            "403": {
+              "description": "incorrect token"
+            },
+            "404": {
+              "description": "user not found"
+            }
+          }
+        }
+      },
+      "/admin/products/{id}": {
+        "get": {
+          "tags": ["products"],
+          "summary": "returns product info",
+          "operationId": "admin product",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be fetched",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "failed to get product info"
+            }
+          }
+        },
+        "patch": {
+          "tags": ["products"],
+          "summary": "partially update product",
+          "operationId": "update products",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be updated",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "product",
+              "in": "body",
+              "description": "new product info",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "totalRating": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "Can not update product"
+            }
+          }
+        },
+        "delete": {
+          "tags": ["products"],
+          "summary": "delete product via passed id",
+          "operationId": "delete product as admin",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of product that needs to be deleted",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "successfully delete product",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "400": {
+              "description": "failed to delete product"
+            }
+          }
+        }
+      },
+      "/admin/products": {
+        "post": {
+          "tags": ["products"],
+          "summary": "create new product",
+          "operationId": "create product as admin",
+          "parameters": [
+            {
+              "name": "product",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "categoryIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "totalRating": {
+                    "type": "number"
+                  },
+                  "price": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "return created product",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "400": {
+              "description": "Failed to add new product"
+            }
+          }
+        }
+      },
+      "/admin/categories/{id}": {
+        "get": {
+          "tags": ["categories"],
+          "summary": "returns category info",
+          "operationId": "admin get category",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of category that needs to be fetched",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "includeProducts",
+              "in": "query",
+              "description": "returns products related to category",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "name": "includeTop3Products",
+              "in": "query",
+              "description": "returns top 3 products related to category",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully found category",
+              "schema": {
+                "$ref": "#/definitions/Category"
+              }
+            },
+            "404": {
+              "description": "Failed to found category"
+            }
+          }
+        },
+        "patch": {
+          "tags": ["categories"],
+          "summary": "partially update category",
+          "operationId": "admin update category",
+          "parameters": [
+            {
+              "name": "Category name",
+              "in": "body",
+              "schema": {
+                "type": "object",
+                "required": true,
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/Category"
+              }
+            },
+            "400": {
+              "description": "failed to update category"
+            }
+          }
+        },
+        "delete": {
+          "tags": ["categories"],
+          "summary": "delete category",
+          "operationId": "admin delete category",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of category that needs to be deleted",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/Category"
+              }
+            },
+            "404": {
+              "description": "category not found"
+            }
+          }
+        }
+      },
+      "/admin/categories": {
+        "post": {
+          "tags": ["categories"],
+          "summary": "create new category",
+          "operationId": "admin category",
+          "parameters": [
+            {
+              "name": "category",
+              "in": "body",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Authorization",
+              "in": "header",
+              "description": "token for verification that user is admin",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "schema": {
+                "$ref": "#/definitions/Category"
+              }
+            },
+            "404": {
+              "description": "Failed to create category"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "Category": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalRating": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }

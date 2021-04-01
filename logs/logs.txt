@@ -96,3 +96,9 @@
 [2021-3-31 18:12:4] GET:/api-docs/swagger-ui-bundle.js.map 200 0.003 ms
 [2021-3-31 18:12:4] GET:/api-docs/swagger-ui-standalone-preset.js.map 200 0.006 ms
 [2021-3-31 18:12:4] GET:/api-docs/favicon-32x32.png 200 0.013 ms
+[2021-4-1 11:15:9] GET:/api-docs 200 0.047 ms
+[2021-4-1 11:15:9] GET:/api-docs/ 200 0.003 ms
+[2021-4-1 11:15:9] GET:/api-docs/swagger-ui.css 200 0.003 ms
+[2021-4-1 11:15:9] GET:/api-docs/swagger-ui-bundle.js 200 0.004 ms
+[2021-4-1 11:15:9] GET:/api-docs/swagger-ui-standalone-preset.js 200 0.005 ms
+[2021-4-1 11:15:9] GET:/api-docs/swagger-ui-init.js 200 0.004 ms

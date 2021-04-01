@@ -9,8 +9,6 @@ import router from "./routes"
 import "reflect-metadata"
 import express from 'express'
 const socket = require('socket.io')
-const swaggerUi = require('swagger-ui-express')
-const swaggerDocument = require('../swagger.json')
 
 const app: Server = express()
 const PORT: number | string = 3000 || process.env.PORT
@@ -33,7 +31,6 @@ app.get("/", (request, response) => {
 
 app.use(logger)
 app.use(router)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const server = app.listen(PORT, () => {
   console.log(`The server has been launched at port: ${PORT}`)
