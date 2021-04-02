@@ -12,7 +12,7 @@ const runDBSearch = (DBName) => {
     productRouter.use(cookieSession({
         name: 'session',
         keys: ['key1', 'key2']
-    }))
+    })) 
 
     if (DBName === 'mongo'){
         productRouter.use("/", paginationHandler(ProductsModel), async (request: Request, response: Response) => {

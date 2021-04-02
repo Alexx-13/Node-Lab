@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { HTTPStatusCodes } from '../../../enum'
-import db from '../../../app'
+import { db } from '../../../app'
 
 interface IAuthenticateControllerPostgres {
     request

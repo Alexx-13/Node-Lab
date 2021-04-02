@@ -22,6 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
     "mongoose": "^5.11.14",
+    "node-cron": "^3.0.0",
     "passport": "^0.4.1",
     "pg": "^8.5.1",
     "postgres-pool": "^3.2.7",
@@ -31,9 +32,11 @@
     "reflect-metadata": "^0.1.13",
     "sessionstorage": "^0.1.0",
     "shortid": "^2.2.16",
+    "socket.io": "^4.0.0",
     "typegoose": "^5.9.1",
     "typeorm": "^0.2.31",
-    "util": "^0.12.3"
+    "util": "^0.12.3",
+    "ws": "^7.4.4"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",

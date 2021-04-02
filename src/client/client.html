@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Playground</title>
+</head>
+<body>
+
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  socket.on('rating', (data) => {
+    console.log(data)
+  });
+</script>
+<script>
+
+// const ws = new WebSocket('ws://localhost:4000/')
+
+// ws.onopen = function() {
+//   console.log('WebSocket Client Connected')
+//   ws.send('Hi this is web client.')
+// }
+
+// ws.onmessage = function(e) {
+//   console.log("Received: '" + e.data + "'")
+// }
+
+</script>
+</html>
