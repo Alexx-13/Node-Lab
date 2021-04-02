@@ -86,7 +86,7 @@
                   "displayName": {
                     "type": "string"
                   },
-                  "price": {
+                  "categoriesID": {
                     "type": "number"
                   },
                   "totalRating": {

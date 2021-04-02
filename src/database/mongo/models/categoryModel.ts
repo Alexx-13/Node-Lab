@@ -3,7 +3,7 @@ import { ICategory } from '../../interface'
 
 class Category extends Typegoose implements ICategory{
     @prop()
-    public id!: number
+    public _id!: number
 
     @prop()
     public displayName!: string

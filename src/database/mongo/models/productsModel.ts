@@ -3,7 +3,7 @@ import { IProducts } from '../../interface'
 
 class Product extends Typegoose implements IProducts {
     @prop()
-    public id!: number
+    public _id!: number
 
     @prop()
     public displayName!: string

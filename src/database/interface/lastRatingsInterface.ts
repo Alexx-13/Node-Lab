@@ -1,5 +1,5 @@
 interface ILastRatings {
-    id: number
+    _id: number
     ratings: string
 }
 

@@ -3,7 +3,7 @@ import { IRegister } from '../../interface'
 
 class Register extends Typegoose implements IRegister {
     @prop()
-    public id!: number
+    public _id!: number
 
     @prop()
     public user_name!: string

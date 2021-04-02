@@ -4,7 +4,7 @@ import { ICategory } from '../../interface'
 @Entity()
 export class Category implements ICategory {
   @PrimaryGeneratedColumn()
-  id!: number;
+  _id!: number;
 
   @Column()
   displayName!: string;

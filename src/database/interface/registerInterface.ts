@@ -1,5 +1,5 @@
 interface IRegister{
-    id: number
+    _id: number
     user_name: string
     user_password: string
     user_first_name?: string

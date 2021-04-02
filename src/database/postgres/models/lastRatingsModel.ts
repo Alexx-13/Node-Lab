@@ -4,7 +4,7 @@ import { ILastRatings } from '../../interface'
 @Entity()
 export class LastRatings implements ILastRatings {
   @PrimaryGeneratedColumn()
-  id!: number;
+  _id!: number;
 
   @Column()
   ratings!: string;

@@ -4,7 +4,7 @@ import { IRegister } from '../../interface'
 @Entity()
 export class Register implements IRegister {
   @PrimaryGeneratedColumn()
-  id!: number
+  _id!: number
 
   @Column()
   user_name!: string
