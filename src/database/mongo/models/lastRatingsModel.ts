@@ -3,11 +3,7 @@ import { ILastRatings } from '../../interface'
 
 class LastRatings extends Typegoose implements ILastRatings{
     @prop()
-<<<<<<< HEAD
     public _id!: number
-=======
-    public id!: number
->>>>>>> main
 
     @prop()
     public ratings!: string

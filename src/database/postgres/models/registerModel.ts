@@ -4,11 +4,7 @@ import { IRegister } from '../../interface'
 @Entity()
 export class Register implements IRegister {
   @PrimaryGeneratedColumn()
-<<<<<<< HEAD
   _id!: number
-=======
-  id!: number
->>>>>>> main
 
   @Column()
   user_name!: string

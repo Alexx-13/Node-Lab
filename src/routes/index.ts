@@ -8,11 +8,8 @@ import profilePasswordRouter from './account/profilePasswordRoute'
 import tokenRouter from './account/tokenRoute'
 import adminProductsRouter from './admin/adminProductsRouter'
 import adminCategoriesRouter from './admin/adminCategoriesRouter'
-<<<<<<< HEAD
 const swaggerUi = require('swagger-ui-express')
 const swaggerDocument = require('../../swagger.json')
-=======
->>>>>>> main
 
 const router: Router = express.Router()
 

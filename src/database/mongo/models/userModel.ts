@@ -3,11 +3,7 @@ import { IUser } from '../../interface'
 
 class User extends Typegoose implements IUser {
     @prop()
-<<<<<<< HEAD
     public _id!: number
-=======
-    public id!: number
->>>>>>> main
 
     @prop()
     public role!: string
