@@ -9,11 +9,9 @@ interface IProductsControllerMongo {
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
-    sortQuery
-    minRating?: number | object | undefined
-    price?: string | object | undefined
-    sortBy?: string | undefined
+    collectionNameRatings?: string
+    finalQuery: Object | undefined
+    sortQuery: Object | undefined
 }
 
 export default class ProductsControllerMongo implements IProductsControllerMongo {
@@ -25,9 +23,6 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     public finalQuery
     public sortQuery
     public userRating: number | undefined
-    public minRating: number | object |  undefined
-    public price: string | object | undefined
-    public sortBy: string | undefined
 
     constructor(request, response){
         this.request = request

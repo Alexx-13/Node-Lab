@@ -7,7 +7,6 @@ interface IProductsGeneralController {
     getCreatedAt()
     getMinRating()
     getPrice()
-
 }
 
 export default class ProductsGeneralController implements IProductsGeneralController{
