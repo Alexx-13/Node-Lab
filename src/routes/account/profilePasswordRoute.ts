@@ -18,7 +18,8 @@ const runDBSearch = (DBName) => {
         bodyParser.urlencoded({ extended: false }),
         (request, response) => {
             if(request.session.isAuth === true){
-                response.sendFile(process.cwd() + '/src/client/profilePassword.html')
+                // response.sendFile(process.cwd() + '/src/client/profilePassword.html')
+                response.send('You are authenticated')
             } else {
                 response.send('You are unauthenticated' + request.session.isAuth)
             }

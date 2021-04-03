@@ -13,10 +13,10 @@ const runDBSearch = (DBName) => {
     }))
 
     if(DBName === 'mongo'){
-        registerRouter.get("/", 
-            express.static(process.cwd() + '/src/client/register.html'),
-            bodyParser.urlencoded({ extended: false }),
-        )
+        // registerRouter.get("/", 
+        //     express.static(process.cwd() + '/src/client/register.html'),
+        //     bodyParser.urlencoded({ extended: false }),
+        // )
 
         registerRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
@@ -27,10 +27,10 @@ const runDBSearch = (DBName) => {
         )
 
     } else if (DBName === 'postgres'){
-        registerRouter.get("/",
-            express.static(process.cwd() + '/src/client/register.html'),
-            bodyParser.urlencoded({ extended: false }),
-        )
+        // registerRouter.get("/",
+        //     express.static(process.cwd() + '/src/client/register.html'),
+        //     bodyParser.urlencoded({ extended: false }),
+        // )
 
 
         registerRouter.post("/",

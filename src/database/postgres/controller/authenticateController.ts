@@ -21,8 +21,8 @@ export default class AuthenticateControllerPostgres implements IAuthenticateCont
     readonly response
     readonly collectionName: string = 'account'
     public finalQuery = {
-        user_name: '',
-        user_password: ''
+        userName: '',
+        userPassword: ''
     }
     requestStr: { [queryParam: string]: string }
 
@@ -42,7 +42,7 @@ export default class AuthenticateControllerPostgres implements IAuthenticateCont
 
     getUserUnhashedPassword() { 
         try{
-            return this.requestStr.user_password
+            return this.requestStr.userPassword
         } catch(err){
             throw new err
         }
@@ -51,12 +51,12 @@ export default class AuthenticateControllerPostgres implements IAuthenticateCont
     setFinalQuery(){
         try{
             this.finalQuery = {
-                user_name: this.getUserName(),
-                user_password: this.getUserUnhashedPassword()
+                userName: this.getUserName(),
+                userPassword: this.getUserUnhashedPassword()
             }
-            return `SELECT user_access_token from ${this.collectionName} 
-                WHERE user_name = ${this.finalQuery.user_name} 
-                AND user_password = ${this.finalQuery.user_password}
+            return `SELECT userAccessToken from ${this.collectionName} 
+                WHERE userName = ${this.finalQuery.userName} 
+                AND userPassword = ${this.finalQuery.userPassword}
                 `
         } catch(err){
             throw new err

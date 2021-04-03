@@ -13,13 +13,13 @@ export default class AdminControllerPostgres {
     public collectionName = 'products'
     public productId: string | undefined
     public finalQuery = {
-        user_name: '',
+        userName: '',
         user_role: '',
-        user_password: '',
-        user_first_name: '',
+        userPassword: '',
+        userFirstName: '',
         user_last_name: '',
-        user_access_token: '',
-        user_refresh_token: ''
+        userAccessToken: '',
+        userRefreshToken: ''
     }
 
     constructor(request, response){
@@ -60,13 +60,13 @@ export default class AdminControllerPostgres {
     getPostByIdQuery(){
         try{
             this.finalQuery = {
-                user_name: this.requestStr.user_name,
+                userName: this.requestStr.userName,
                 user_role: this.requestStr.user_role,
-                user_password: this.requestStr.user_password,
-                user_first_name: this.requestStr.user_password,
+                userPassword: this.requestStr.userPassword,
+                userFirstName: this.requestStr.userPassword,
                 user_last_name: this.requestStr.user_last_name,
-                user_access_token: this.requestStr.user_access_token,
-                user_refresh_token: this.requestStr.user_refresh_token
+                userAccessToken: this.requestStr.userAccessToken,
+                userRefreshToken: this.requestStr.userRefreshToken
             }
 
             return `INSERT INTO ${this.collectionName} 

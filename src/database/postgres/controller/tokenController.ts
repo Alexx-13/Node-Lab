@@ -44,7 +44,7 @@ export default class TokenControllerPostgres implements ITokenControllerPostgres
 
     handleRefreshToken(){
         try {
-            return this.refreshToken = this.requestStr.user_refresh_token
+            return this.refreshToken = this.requestStr.userRefreshToken
         } catch (err) {
             throw new err
         }
@@ -60,7 +60,7 @@ export default class TokenControllerPostgres implements ITokenControllerPostgres
 
     setFindQuery(){
         try{
-            return `UPDATE ${this.collectionName} SET user_access_token = ${this.handleAccessToken()}`
+            return `UPDATE ${this.collectionName} SET userAccessToken = ${this.handleAccessToken()}`
         } catch (err) {
             throw new err
         }
@@ -86,8 +86,8 @@ export default class TokenControllerPostgres implements ITokenControllerPostgres
                     this.response.send('Username or token incorrect')
                 } else {
                     const jsonData = {
-                        USER_ACCESS_TOKEN: this.accessToken,
-                        USER_REFRESH_TOKEN: this.refreshToken
+                        userAccessToken: this.accessToken,
+                        userRefreshToken: this.refreshToken
                     }
 
                     fs.writeFile('.tokens.json', 

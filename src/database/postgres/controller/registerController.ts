@@ -34,13 +34,13 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
     accessToken
     refreshToken
     public finalQuery = {
-        user_name: '',
+        userName: '',
         user_role: '',
-        user_password: '',
-        user_first_name: '',
+        userPassword: '',
+        userFirstName: '',
         user_last_name: '',
-        user_access_token: '',
-        user_refresh_token: ''
+        userAccessToken: '',
+        userRefreshToken: ''
     }
     requestStr: { [queryParam: string]: string }
 
@@ -84,7 +84,7 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
 
     getUserFirstName(){
         try{
-            return this.requestStr.user_first_name
+            return this.requestStr.userFirstName
         } catch(err){
             throw new err
         }
@@ -100,7 +100,7 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
 
     getUserUnhashedPassword() { 
         try{
-            return this.requestStr.user_password
+            return this.requestStr.userPassword
         } catch(err){
             throw new err
         }
@@ -110,7 +110,7 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
         try{
             (async () => {
                 const salt = await bcrypt.genSalt(10)
-                return this.finalQuery.user_password = await bcrypt.hash(this.getUserUnhashedPassword(), salt)
+                return this.finalQuery.userPassword = await bcrypt.hash(this.getUserUnhashedPassword(), salt)
             })()
         } catch(err){
             throw new err
@@ -129,13 +129,13 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
         try{
             if(this.getUserRole() === UserRole.admin || this.getUserRole() === UserRole.buyer ){
                 this.finalQuery = {
-                    user_name: this.getUserName(),
+                    userName: this.getUserName(),
                     user_role: this.getUserRole(),
-                    user_password: this.getUserUnhashedPassword(),
-                    user_first_name: this.getUserFirstName(),
+                    userPassword: this.getUserUnhashedPassword(),
+                    userFirstName: this.getUserFirstName(),
                     user_last_name: this.getUserLastName(),
-                    user_access_token: this.handleAccessToken(),
-                    user_refresh_token: this.handleRefreshToken()
+                    userAccessToken: this.handleAccessToken(),
+                    userRefreshToken: this.handleRefreshToken()
                 }
     
                 return `INSERT INTO ${this.collectionName} 
@@ -168,8 +168,8 @@ export default class RegisterControllerPostgres implements IRegisterControllerPo
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
                     const jsonData = {
-                        USER_ACCESS_TOKEN: this.accessToken,
-                        USER_REFRESH_TOKEN: this.refreshToken
+                        userAccessToken: this.accessToken,
+                        userRefreshToken: this.refreshToken
                     }
 
                     fs.writeFile('.tokens.json', 

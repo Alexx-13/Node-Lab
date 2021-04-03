@@ -29,8 +29,8 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
     accessToken
     refreshToken
     public finalQuery = {
-        user_name: '',
-        user_refresh_token: ''
+        userName: '',
+        userRefreshToken: ''
     }
 
     constructor(request, response){
@@ -49,7 +49,7 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
 
     handleRefreshToken(){
         try {
-            return this.refreshToken = this.requestStr.user_refresh_token
+            return this.refreshToken = this.requestStr.userRefreshToken
         } catch (err) {
             throw new err
         }
@@ -66,8 +66,8 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
     setFinalQuery(){
         try{
             return this.finalQuery = {
-                user_name: this.getUserName(),
-                user_refresh_token: this.handleRefreshToken()
+                userName: this.getUserName(),
+                userRefreshToken: this.handleRefreshToken()
             }
         } catch (err) {
             throw new err
@@ -92,16 +92,16 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
                 } else if (results.length === 0) {
                     this.response.send('Username or token incorrect')
                 } else {
-                    let oldData = { user_access_token:  results[0].user_access_token }
-                    let newData = { $set: { user_access_token:  this.handleAccessToken() } }
+                    let oldData = { userAccessToken:  results[0].userAccessToken }
+                    let newData = { $set: { userAccessToken:  this.handleAccessToken() } }
                     
                     db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                         if (err) {
                             throw new err
                         } else {
                             let jsonData = {
-                                USER_ACCESS_TOKEN: this.accessToken,
-                                USER_REFRESH_TOKEN: this.refreshToken
+                                userAccessToken: this.accessToken,
+                                userRefreshToken: this.refreshToken
                             }
         
                             fs.writeFile('.tokens.json', 

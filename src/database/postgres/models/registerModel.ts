@@ -7,19 +7,19 @@ export class Register implements IRegister {
   _id!: number
 
   @Column()
-  user_name!: string
+  userName!: string
 
   @Column()
-  user_password!: string
+  userPassword!: string
 
   @Column()
-  user_first_name?: string
+  userFirstName?: string
 
   @Column()
-  user_last_name?: string
+  userLastName: string
 
   @Column()
-  user_access_token!: string;
+  userAccessToken!: string;
 }
 
 const RegisterModel = new Register()

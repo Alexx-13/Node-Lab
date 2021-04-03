@@ -20,8 +20,8 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
     readonly response
     readonly collectionName: string = 'account'
     public finalQuery = {
-        user_name: '',
-        user_password: ''
+        userName: '',
+        userPassword: ''
     }
     requestStr: { [queryParam: string]: string }
 
@@ -41,7 +41,7 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
 
     getUserUnhashedPassword() { 
         try{
-            return this.requestStr.user_password
+            return this.requestStr.userPassword
         } catch(err){
             throw new err
         }
@@ -50,8 +50,8 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
     setFinalQuery(){
         try{
             return this.finalQuery = {
-                user_name: this.getUserName(),
-                user_password: this.getUserUnhashedPassword()
+                userName: this.getUserName(),
+                userPassword: this.getUserUnhashedPassword()
             }
         } catch(err){
             throw new err
@@ -68,15 +68,15 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
 
     getToken() {
         try {
-            const { user_name, user_password } = this.getFinalQuery()
+            const { userName, userPassword } = this.getFinalQuery()
 
-            db.default.collection(this.collectionName).find({ user_name: user_name, user_password: user_password }).toArray((err, results) => {
+            db.default.collection(this.collectionName).find({ userName: userName, userPassword: userPassword }).toArray((err, results) => {
                 if(err){
                     throw new err
                 } else if (results.length === 0){
                     this.response.send('Username or password incorrect')
                 } else {
-                    this.response.send(results[0].user_access_token)
+                    this.response.send(results[0].userAccessToken)
                 }
             })
         } catch (err) {

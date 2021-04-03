@@ -30,7 +30,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
     readonly response
     readonly collectionName: string = 'account'
     public finalQuery = {
-        user_password: '',
+        userPassword: '',
     }
     isAuth
     requestStr: { [queryParam: string]: string }
@@ -46,8 +46,8 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
             const readFileContent = util.promisify(fs.readFile)
             const data = await readFileContent('.tokens.json').toString()
 
-            if(JSON.parse(data).USER_ACCESS_TOKEN){
-                return JSON.parse(data).USER_ACCESS_TOKEN
+            if(JSON.parse(data).userAccessToken){
+                return JSON.parse(data).userAccessToken
             }
 
         } catch (err) {
@@ -57,7 +57,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getUserName(){
         try {
-            return this.requestStr.user_name
+            return this.requestStr.userName
         } catch (err) {
             throw new err
         }
@@ -65,7 +65,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getFirstName(){
         try {
-            return this.requestStr.user_first_name
+            return this.requestStr.userFirstName
         } catch (err) {
             throw new err
         }
@@ -73,7 +73,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getLastName(){
         try {
-            return this.requestStr.user_last_name
+            return this.requestStr.userLastName
         } catch (err) {
             throw new err
         }
@@ -81,7 +81,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getOldPassword(){
         try {
-            return this.requestStr.user_old_password
+            return this.requestStr.userOldPassword
         } catch (err) {
             throw new err
         }
@@ -89,7 +89,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getNewPassword(){
         try {
-            return this.requestStr.user_new_password
+            return this.requestStr.userNewPassword
         } catch (err) {
             throw new err
         }
@@ -97,7 +97,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     setPasswordFinalQuery(){
         try {
-            return this.finalQuery.user_password = this.getNewPassword()
+            return this.finalQuery.userPassword = this.getNewPassword()
         } catch (err) {
             throw new err
         }
@@ -114,8 +114,8 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
     updateAccountPasswordCollection(){
         try {
             if(this.isAuth){
-                const oldData = { user_password: this.getOldPassword() }
-                const newData = { $set: { user_password: this.getNewPassword() } }
+                const oldData = { userPassword: this.getOldPassword() }
+                const newData = { $set: { userPassword: this.getNewPassword() } }
     
                 if(this.getOldPassword() && this.getNewPassword()){
                     db.default.collection(this.collectionName).find(oldData).toArray((err, results) => {
@@ -151,13 +151,13 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
                         this.response.send('Incorrect data')
                     } else {
                         const oldData: object = {
-                            user_name: results[0].user_name,
-                            user_first_name: results[0].user_first_name,
+                            userName: results[0].userName,
+                            userFirstName: results[0].userFirstName,
                             user_last_name: results[0].user_last_name
                         }
                         const newData: object = { 
-                            user_name: this.getUserName(),
-                            user_first_name: this.getFirstName(),
+                            userName: this.getUserName(),
+                            userFirstName: this.getFirstName(),
                             user_last_name: this.getLastName()
                         }
 

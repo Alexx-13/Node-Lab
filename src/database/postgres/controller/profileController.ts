@@ -40,8 +40,8 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
             const readFileContent = util.promisify(fs.readFile)
             const data = await readFileContent('.tokens.json').toString()
 
-            if(JSON.parse(data).USER_ACCESS_TOKEN){
-                return JSON.parse(data).USER_ACCESS_TOKEN
+            if(JSON.parse(data).userAccessToken){
+                return JSON.parse(data).userAccessToken
             }
 
         } catch (err) {
@@ -51,7 +51,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getUserName(){
         try {
-            return this.requestStr.user_name
+            return this.requestStr.userName
         } catch (err) {
             throw new err
         }
@@ -59,7 +59,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getFirstName(){
         try {
-            return this.requestStr.user_first_name
+            return this.requestStr.userFirstName
         } catch (err) {
             throw new err
         }
@@ -75,7 +75,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getOldPassword(){
         try {
-            return this.requestStr.user_old_password
+            return this.requestStr.userOldPassword
         } catch (err) {
             throw new err
         }
@@ -83,7 +83,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
 
     getNewPassword(){
         try {
-            return this.requestStr.user_new_password
+            return this.requestStr.userNewPassword
         } catch (err) {
             throw new err
         }
@@ -92,8 +92,8 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
     setDataFinalQuery(){
         try {
             return `UPDATE ${this.collectionName} SET 
-                user_name = ${this.getUserName()}
-                user_first_name = ${this.getFirstName()}
+                userName = ${this.getUserName()}
+                userFirstName = ${this.getFirstName()}
                 user_last_name = ${this.getLastName()}
             `
         } catch (err) {
@@ -112,7 +112,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
     setPasswordFinalQuery(){
         try {
             return `UPDATE ${this.collectionName} SET 
-                user_password = ${this.getNewPassword()}
+                userPassword = ${this.getNewPassword()}
             `
         } catch (err) {
             throw new err

@@ -1,10 +1,10 @@
 interface IRegister{
     _id: number
-    user_name: string
-    user_password: string
-    user_first_name?: string
-    user_last_name?: string
-    user_access_token: string
+    userName: string
+    userPassword: string
+    userFirstName?: string
+    userLastName?: string
+    userAccessToken: string
 }
 
 export default IRegister
