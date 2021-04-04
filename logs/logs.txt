@@ -302,3 +302,6 @@
 [2021-4-4 18:2:5] GET:/categories?id=60684265dc256c2f423efc32&includeProducts=true&includeTop3Products=top 200 0.023 ms
 [2021-4-4 18:2:56] GET:/categories?id=60684265dc256c2f423efc32&includeProducts=true 200 0.022 ms
 [2021-4-4 18:3:0] GET:/categories? 200 0.002 ms
+[2021-4-4 18:26:0] GET:/register? 200 0.023 ms
+[2021-4-4 18:28:56] POST:/register?username=Alexx&userRole=Admin&firstName=Aliaksei&lastName=Kernoha&password=123123 200 0.022 ms
+[2021-4-4 18:32:10] POST:/register?username=Alexx&userRole=Admin&firstName=Aliaksei&lastName=Kernoha&password=123123 200 0.024 ms

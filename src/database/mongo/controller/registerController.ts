@@ -1,48 +1,26 @@
 import { Response } from 'express'
-import { HTTPStatusCodes, UserRole } from '../../../enum'
-import bcrypt from "bcrypt"
-import randtoken from 'rand-token'
+import { HTTPStatusCodes, UserRole, CollectionNames } from '../../../enum'
 import fs from 'fs'
 import { db } from '../../../app'
+import { RegisterGeneralController } from '../../generalController'
 
 interface IRegisterControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
-    accessToken: string
-    refreshToken: string
+    finalQuery: Object | undefined
 
-    handleAccessToken()
-    handleRefreshToken()
-    getUserName()
-    getUserFirstName()
-    getUserLastName()
-    getUserRole()
-    getUserUnhashedPassword()
-    setHashedUserPassword()
-    getHashedUserPassword()
-    setFinalQuery()
-    getFinalQuery()
+    setFindQuery()
+    getFindQuery()
     setAccountCollection()
 }
 
 export default class RegisterControllerMongo implements IRegisterControllerMongo {
     readonly request
     readonly response: Response
-    readonly collectionName: string = 'account'
-    accessToken
-    refreshToken
-    public finalQuery = {
-        userName: '',
-        user_role: '',
-        userPassword: '',
-        userFirstName: '',
-        user_last_name: '',
-        userAccessToken: '',
-        userRefreshToken: ''
-    }
+    readonly collectionName: string = CollectionNames.account
+    public finalQuery
     requestStr: { [queryParam: string]: string }
 
     constructor(request, response){
@@ -51,105 +29,24 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
         this.requestStr = this.request.body
     }
 
-    handleAccessToken(){
-        try{
-            return this.accessToken = randtoken.generate(54)
-        } catch (err) {
-            throw new err
-        }
+    setFindQuery() {
+        this.finalQuery = new Object()
+        let registerFinder = new RegisterGeneralController(this.request, this.response)
+
+        // if(registerFinder.getUserRole() === UserRole.admin || UserRole.buyer){
+        this.finalQuery.userName = registerFinder.getUserName()
+        this.finalQuery.userRole = registerFinder.getUserRole()
+        this.finalQuery.firstName = registerFinder.getUserFirstName()
+        this.finalQuery.lastName = registerFinder.getUserLastName()
+
+        return this.finalQuery
+        // }
+        
     }
 
-    handleRefreshToken(){
+    getFindQuery() {
         try{
-            return this.refreshToken = randtoken.generate(54)
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getUserName() {
-        try{
-            return this.requestStr.user_field
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getUserFirstName(){
-        try{
-            return this.requestStr.userFirstName
-        } catch(err){
-            throw new err
-        }
-    }
-    
-    getUserLastName(){
-        try{
-            return this.requestStr.user_last_name
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getUserRole(){
-        try{
-            return this.requestStr.user_role
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getUserUnhashedPassword() { 
-        try{
-            return this.requestStr.userPassword
-        } catch(err){
-            throw new err
-        }
-    }
-
-    setHashedUserPassword(){
-        try{
-            (async () => {
-                const salt = await bcrypt.genSalt(10)
-                return this.finalQuery.userPassword = await bcrypt.hash(this.getUserUnhashedPassword(), salt)
-            })()
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getHashedUserPassword() {
-        try {
-            return this.setHashedUserPassword()
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    setFinalQuery() {
-        try{
-            if(this.getUserRole() === UserRole.admin|| this.getUserRole() === UserRole.buyer){
-                return this.finalQuery = {
-                    userName: this.getUserName(),
-                    user_role: this.getUserRole(),
-                    userPassword: this.getUserUnhashedPassword(),
-                    userFirstName: this.getUserFirstName(),
-                    user_last_name: this.getUserLastName(),
-                    userAccessToken: this.handleAccessToken(),
-                    userRefreshToken: this.handleRefreshToken()
-                }
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-           
-        } catch (err){
-            throw new err
-        }
-    }
-
-    getFinalQuery() {
-        try{
-            return this.setFinalQuery()
+            return this.setFindQuery()
         } catch(err){
             throw new err
         }
@@ -157,13 +54,16 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
 
     setAccountCollection(){
         try{
-            db.default.collection(this.collectionName).insertOne(this.getFinalQuery(), (err, results) => {
+            db.default.collection(this.collectionName).insertOne(this.getFindQuery(), (err, results) => {
                 if(err){
                     throw new err
+                } else if(results.length === 0){
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 } else {
+                    let registerFinder = new RegisterGeneralController(this.request, this.response)
                     const jsonData = {
-                        userAccessToken: this.accessToken,
-                        userRefreshToken: this.refreshToken
+                        userAccessToken: registerFinder.handleAccessToken(),
+                        userRefreshToken: registerFinder.handleRefreshToken()
                     }
 
                     fs.writeFile('.tokens.json', 
