@@ -1,8 +1,11 @@
-import { CollectionNames } from '../../enum'
+import { ObjectId } from 'mongodb'
+import { HTTPStatusCodes, CollectionNames } from '../../enum'
 
 interface ICategoriesGeneralController {
-    getUserId()
+    getCategoryId()
     getDisplayName()
+    getIncludeProducts()
+    getIncludeTop3Products()
 }
 
 export default class CategoriesGeneralController implements ICategoriesGeneralController{
@@ -14,12 +17,12 @@ export default class CategoriesGeneralController implements ICategoriesGeneralCo
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    getUserId(){
+    getCategoryId(){
         try {
-            return this.requestStr._id
+            return new ObjectId(this.requestStr.id)
         } catch (err) {
             throw new err
         }
@@ -28,6 +31,36 @@ export default class CategoriesGeneralController implements ICategoriesGeneralCo
     getDisplayName(){
         try {
             return this.requestStr.displayName
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    getIncludeProducts(){
+        try {
+            if(this.requestStr.includeProducts){
+                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
+                    return true
+                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
+                    return false
+                } else {
+                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
+                }
+            }
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    getIncludeTop3Products(){
+        try {
+            if(this.requestStr.includeTop3Products){
+                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
+                    return 3
+                } else {
+                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
+                } 
+            }
         } catch (err) {
             throw new err
         }
