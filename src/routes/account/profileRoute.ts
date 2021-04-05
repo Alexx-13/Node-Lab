@@ -19,7 +19,6 @@ const runDBSearch = (DBName) => {
         (request, response) => {
             if(request.session.isAuth === true){
                 response.send('You are authenticated')
-                // response.sendFile(process.cwd() + '/src/client/profile.html')
             } else {
                 response.send('You are unauthenticated' + request.session.isAuth)
             }
@@ -28,6 +27,15 @@ const runDBSearch = (DBName) => {
 
     if(DBName === 'mongo'){
         profileRouter.post(
+            "/password",
+            bodyParser.urlencoded({ extended: false }),
+            async (request: Request, response: Response) => {
+                const profileControllerMongo = new ProfileControllerMongo(request, response)
+                profileControllerMongo.updateAccountPasswordCollection()
+            }
+        )
+
+        profileRouter.put(
             "/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {

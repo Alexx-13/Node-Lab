@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 import { db } from '../../../app'
 
 interface IAdminControllerMongo {
@@ -17,7 +17,7 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'products'
+    public collectionName = CollectionNames.account
     public productId: string | undefined
 
     constructor(request, response){

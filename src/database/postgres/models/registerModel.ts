@@ -16,7 +16,7 @@ export class Register implements IRegister {
   userFirstName?: string
 
   @Column()
-  userLastName: string
+  userLastName!: string;
 
   @Column()
   userAccessToken!: string;

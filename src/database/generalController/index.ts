@@ -1,11 +1,11 @@
 import AccountGeneralController from './accountGeneralController'
 import CategoriesGeneralController from './categoriesGeneralController'
 import ProductsGeneralController from './productsGeneralController'
-import RegisterGeneralController from './registerGeneralController'
+import ProfileGeneralController from './profileGeneralController'
 
 export {
     AccountGeneralController,
     CategoriesGeneralController,
     ProductsGeneralController,
-    RegisterGeneralController
+    ProfileGeneralController
 }

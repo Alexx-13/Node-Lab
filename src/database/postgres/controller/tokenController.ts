@@ -52,7 +52,7 @@ export default class TokenControllerPostgres implements ITokenControllerPostgres
 
     getUserName(){
         try{
-            return this.requestStr.user_field
+            return this.requestStr.userName
         } catch (err) {
             throw new err
         }

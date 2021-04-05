@@ -1,13 +1,15 @@
 import { CollectionNames } from '../../enum'
+import randtoken from 'rand-token'
 
 interface IAccountGeneralController {
-    getUserId()
+    getId()
     getUserName()
-    getUserFirstName()
-    getUserLastName()
-    getUserPassword()
+    getFirstName()
+    getLastName()
+    getPassword()
     getAccessToken()
     getRefreshToken()
+    getUserRole()
 }
 
 export default class AccountGeneralController implements IAccountGeneralController{
@@ -19,10 +21,10 @@ export default class AccountGeneralController implements IAccountGeneralControll
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    getUserId(){
+    getId(){
         try {
             return this.requestStr._id
         } catch (err) {
@@ -38,25 +40,25 @@ export default class AccountGeneralController implements IAccountGeneralControll
         }
     }
 
-    getUserFirstName(){
+    getFirstName(){
         try {
-            return this.requestStr.userFirstName
+            return this.requestStr.firstName
         } catch (err) {
             throw new err
         }
     }
 
-    getUserLastName(){
+    getLastName(){
         try {
-            return this.requestStr.user_last_name
+            return this.requestStr.lastName
         } catch (err) {
             throw new err
         }
     }
 
-    getUserPassword(){
+    getPassword(){
         try {
-            return this.requestStr.userPassword
+            return this.requestStr.password
         } catch (err) {
             throw new err
         }
@@ -64,7 +66,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
 
     getAccessToken(){
         try {
-            return this.requestStr.userAccessToken
+            return this.requestStr.accessToken
         } catch (err) {
             throw new err
         }
@@ -72,7 +74,31 @@ export default class AccountGeneralController implements IAccountGeneralControll
 
     getRefreshToken(){
         try {
-            return this.requestStr.userRefreshToken
+            return this.requestStr.refreshToken
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    getUserRole(){
+        try{
+            return this.requestStr.userRole
+        } catch(err){
+            throw new err
+        }
+    }
+
+    handleAccessToken(){
+        try{
+            return randtoken.generate(54)
+        } catch (err) {
+            throw new err
+        }
+    }
+
+    handleRefreshToken(){
+        try{
+            return randtoken.generate(54)
         } catch (err) {
             throw new err
         }

@@ -2,7 +2,7 @@ import { Response } from 'express'
 import { HTTPStatusCodes, UserRole, CollectionNames } from '../../../enum'
 import fs from 'fs'
 import { db } from '../../../app'
-import { RegisterGeneralController } from '../../generalController'
+import { AccountGeneralController } from '../../generalController'
 
 interface IRegisterControllerMongo {
     request
@@ -26,18 +26,27 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
     setFindQuery() {
         this.finalQuery = new Object()
-        let registerFinder = new RegisterGeneralController(this.request, this.response)
+        let accountFinder = new AccountGeneralController(this.request, this.response)
 
         // if(registerFinder.getUserRole() === UserRole.admin || UserRole.buyer){
-        this.finalQuery.userName = registerFinder.getUserName()
-        this.finalQuery.userRole = registerFinder.getUserRole()
-        this.finalQuery.firstName = registerFinder.getUserFirstName()
-        this.finalQuery.lastName = registerFinder.getUserLastName()
+        if(this.requestStr.userName && this.requestStr.password){
+            this.finalQuery.userName = accountFinder.getUserName()
+            this.finalQuery.password = accountFinder.getPassword()
+            this.finalQuery.userRole = accountFinder.getUserRole()
+            this.finalQuery.firstName = accountFinder.getFirstName()
+            this.finalQuery.lastName = accountFinder.getLastName()
+            this.finalQuery.accessToken = accountFinder.handleAccessToken()
+            this.finalQuery.refreshToken = accountFinder.handleRefreshToken()
+            console.log(this.finalQuery)
+        } else {
+            return this.response.send(HTTPStatusCodes.BAD_REQUEST)
+        }
+
 
         return this.finalQuery
         // }
@@ -60,10 +69,9 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
                 } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 } else {
-                    let registerFinder = new RegisterGeneralController(this.request, this.response)
                     const jsonData = {
-                        userAccessToken: registerFinder.handleAccessToken(),
-                        userRefreshToken: registerFinder.handleRefreshToken()
+                        accessToken: this.finalQuery.accessToken,
+                        refreshToken: this.finalQuery.refreshToken
                     }
 
                     fs.writeFile('.tokens.json', 

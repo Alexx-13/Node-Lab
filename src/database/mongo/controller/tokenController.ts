@@ -1,21 +1,18 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 const fs = require('fs')
-const randtoken = require('rand-token')
 import { db } from '../../../app'
+import { ProfileGeneralController, AccountGeneralController } from '../../generalController'
 
 interface ITokenControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
+    finalQuery: Object | undefined
     accessToken: string
     refreshToken: string
 
-    handleAccessToken()
-    handleRefreshToken()
-    getUserName()
     setFinalQuery()
     getFinalQuery()
     updateToken()
@@ -24,14 +21,11 @@ interface ITokenControllerMongo {
 export default class TokenControllerMongo implements ITokenControllerMongo {
     readonly request
     readonly response: Response
-    readonly collectionName: string = 'account'
+    readonly collectionName: string = CollectionNames.account
     requestStr: { [queryParam: string]: string }
     accessToken
     refreshToken
-    public finalQuery = {
-        userName: '',
-        userRefreshToken: ''
-    }
+    public finalQuery
 
     constructor(request, response){
         this.request = request
@@ -39,65 +33,37 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
         this.requestStr = this.request.body
     }
 
-    handleAccessToken(){
-        try {
-            return this.accessToken = randtoken.generate(54)
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    handleRefreshToken(){
-        try {
-            return this.refreshToken = this.requestStr.userRefreshToken
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getUserName(){
-        try{
-            return this.requestStr.user_field
-        } catch (err) {
-            throw new err
-        }
-    }
-
     setFinalQuery(){
-        try{
-            return this.finalQuery = {
-                userName: this.getUserName(),
-                userRefreshToken: this.handleRefreshToken()
-            }
-        } catch (err) {
-            throw new err
-        }
+        this.finalQuery = new Object()
+        const profileFinder = new ProfileGeneralController(this.request, this.response)
+        
+        this.finalQuery.refreshToken = profileFinder.getLocalToken()
+
+        return this.finalQuery
     }
 
-    getFinalQuery(){
-        try {
-            return this.finalQuery
-        } catch (err) {
-            throw new err
-        }
+    async getFinalQuery(){
+        return await this.setFinalQuery()
     }
 
     updateToken(){
         try{
-            this.setFinalQuery()
-
             db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, results) => {
                 if(err){
                     throw new err
                 } else if (results.length === 0) {
                     this.response.send('Username or token incorrect')
                 } else {
-                    let oldData = { userAccessToken:  results[0].userAccessToken }
-                    let newData = { $set: { userAccessToken:  this.handleAccessToken() } }
+                    const accountFinder = new AccountGeneralController(this.request, this.response)
+
+                    const oldData = { accessToken:  results[0].accessToken }
+                    const newData = { $set: { userAccessToken:  accountFinder.handleAccessToken() } }
                     
                     db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
                         if (err) {
                             throw new err
+                        } else if (results.length === 0){
+                            this.response.send('Incorrect refresh token was provided')
                         } else {
                             let jsonData = {
                                 userAccessToken: this.accessToken,
