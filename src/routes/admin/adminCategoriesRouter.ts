@@ -53,7 +53,7 @@ const runDBSearch = (DBName) => {
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
                     const adminController = new AdminControllerMongo(request, response)
-                    adminController.getDBPatchByIdQuery()
+                    adminController.makeDBPatchById()
                 } else {
                     response.send('You are unauthenticated' + request.session.isAuth)
                 }
@@ -61,7 +61,7 @@ const runDBSearch = (DBName) => {
         )
 
     } else if (DBName === 'postgres'){
-        adminCategoriesRouter.get("/:id", 
+        adminCategoriesRouter.get("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -85,7 +85,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminCategoriesRouter.delete("/:id", 
+        adminCategoriesRouter.delete("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -97,7 +97,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminCategoriesRouter.patch("/:id", 
+        adminCategoriesRouter.patch("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){

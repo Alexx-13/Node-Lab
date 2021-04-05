@@ -1,24 +1,20 @@
 import { Request, Response } from 'express'
 import { HTTPStatusCodes, CollectionNames } from '../../../enum'
+import { ProductsGeneralController } from '../../generalController'
 import { db } from '../../../app'
+import { ObjectId } from 'mongodb'
 
 interface IAdminControllerMongo {
-    getProductId()
-    getSearchByIdQuery()
-    makeDBSearchById()
-    makeDBPost()
-    getDeleteByIdQuery()
-    makeDBDeleteById()
-    getDBPatchByIdQuery()
-    makeDBPathcById()
+    finalQuery: Object | undefined
 }
 
 export default class AdminControllerMongo implements IAdminControllerMongo{
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName = CollectionNames.account
+    public collectionName = CollectionNames.products
     public productId: string | undefined
+    public finalQuery
 
     constructor(request, response){
         this.request = request
@@ -26,24 +22,25 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
         this.requestStr = request.query
     }
 
-    getProductId(){
-        try{
-            this.productId = this.request.params.id
-        } catch(err){
-            throw new err
+    setFindQueryById(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+        const productsFinder = new ProductsGeneralController(this.request, this.response)
+
+        if(this.requestStr.id){
+            this.finalQuery._id = new ObjectId(productsFinder.getProductId())
+        }
+
+        return this.finalQuery
     }
 
-    getSearchByIdQuery(){
-        try{
-            return { _id: this.getProductId() }
-        } catch(err){
-            throw new err
-        }
+    getFindQueryById(){
+        return this.setFindQueryById()
     }
 
     makeDBSearchById(){
-        db.default.collection(this.collectionName).find(this.getSearchByIdQuery()).toArray((err, results) => {
+        db.default.collection(this.collectionName).find(this.getFindQueryById()).toArray((err, results) => {
             if (err){
                 throw err;
             } else if(results.length === 0){
@@ -61,47 +58,39 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
             } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             } else {
-                this.response.send(results)
+                this.response.send(HTTPStatusCodes.OK)
             }
         }) 
     }
 
-    getDeleteByIdQuery(){
-        try{
-            return { _id: this.getProductId() }
-        } catch(err){
-            throw new err
-        }
-    }
-
     makeDBDeleteById(){
-        db.default.collection(this.collectionName).deleteOne(this.getSearchByIdQuery()).toArray((err, results) => {
+        db.default.collection(this.collectionName).deleteOne(this.getFindQueryById()).toArray((err, results) => {
             if (err){
                 throw err;
             } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             } else {
-                this.response.send(results)
+                this.response.send(HTTPStatusCodes.OK)
             }
         })    
     }
-    
-    getDBPatchByIdQuery(){
-        try{
-            return { _id: this.getProductId(), $set: this.requestStr }
-        } catch(err){
-            throw new err
-        }
-    }
 
-    makeDBPathcById(){
-        db.default.collection(this.collectionName).update(this.getDBPatchByIdQuery()).toArray((err, results) => {
+    makeDBPatchById(){
+        db.default.collection(this.collectionName).find(this.getFindQueryById()).toArray((err, results) => {
             if (err){
-                throw err;
+                throw err
             } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             } else {
-                this.response.send(results)
+                db.default.collection(this.collectionName).update(this.requestStr).toArray((err, results) => {
+                    if (err){
+                        throw err
+                    } else if(results.length === 0){
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    } else {
+                        this.response.send(results)
+                    }
+                })
             }
         }) 
     }

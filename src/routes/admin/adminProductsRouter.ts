@@ -12,7 +12,7 @@ const runDBSearch = (DBName) => {
     }))
 
     if(DBName === 'mongo'){
-        adminProductsRouter.get("/:id", 
+        adminProductsRouter.get("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -36,7 +36,7 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.delete("/:id", 
+        adminProductsRouter.delete("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
@@ -48,12 +48,12 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminProductsRouter.patch("/:id", 
+        adminProductsRouter.patch("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
                 if(request.session.isAuth === true){
                     const adminController = new AdminControllerMongo(request, response)
-                    adminController.getDBPatchByIdQuery()
+                    adminController.makeDBPatchById()
                 } else {
                     response.send('You are unauthenticated' + request.session.isAuth)
                 }

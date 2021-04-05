@@ -1,7 +1,7 @@
 import { CollectionNames, HTTPStatusCodes } from '../../enum'
 
 interface IProductsGeneralController {
-    getUserId()
+    getProductId()
     getDisplayName()
     getCategoriesIDs()
     getCreatedAt()
@@ -22,9 +22,9 @@ export default class ProductsGeneralController implements IProductsGeneralContro
         this.requestStr = this.request.query
     }
 
-    getUserId(){
+    getProductId(){
         try {
-            return this.requestStr._id
+            return this.requestStr.id
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
