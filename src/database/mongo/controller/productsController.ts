@@ -30,64 +30,23 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
         this.requestStr = request.query
     }
 
-    getUserRating(){
-        try{
-            const rating = parseInt(this.request.params.value)
-
-            if(rating <= 10 && rating >= 1){
-                this.userRating = rating
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-        } catch(err){
-            throw new err
+    setRatingsQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        const productsFinder = new ProductsGeneralController(this.request, this.response)
+
+        if(this.requestStr.id && this.requestStr.rate){
+            this.finalQuery._id = productsFinder.getProductId()
+            this.finalQuery.ratings = productsFinder.getRatings()
+        }
+
+        return this.finalQuery
     }
 
-    getUserRatingQuery(){
-        try{
-          return { totalRating: this.getUserRating() }
-        } catch(err){
-            throw new err
-        }
-    }
-
-    makeDBRatingUpdate(){
-        db.default.collection(this.collectionName).find(this.getUserRatingQuery()).toArray((err, results) => {
-            if (err){
-                throw err
-            } else if(results.length === 0){
-                this.response.send(HTTPStatusCodes.NOT_FOUND)
-            } else {
-                const oldData = { totalRating:  results[0].totalRating }
-                const newData = { $set: this.getUserRatingQuery() }
-
-                db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                    if (err) {
-                        throw new err
-                    } else {
-                        this.response.send(HTTPStatusCodes.OK)
-                        io.sockets.on('connection', (socket) => {
-                            console.log('WebScoket in products controller connected!');
-                          
-                            socket.emit('rating', results)
-                          
-                            socket.on('disconnect', () => {
-                              console.log('WebScoket in products controller disconnected!')
-                            })
-                        })
-
-                        db.default.collection(this.collectionNameRatings).insertOne(results, (err, results) => {
-                            if (err) {
-                                throw new err
-                            } else {
-                                this.response.send(HTTPStatusCodes.OK)
-                            }
-                        })
-                    }
-                })
-            }
-        })
+    getRatingsQuery(){
+        return this.setRatingsQuery()
     }
 
     setFindQuery(){
@@ -126,13 +85,45 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     }
 
     makeDBSearch(){
+        if(this.requestStr.id && this.requestStr.rate){
+            this.getRatingsQuery()
+
+            db.default.collection(this.collectionName).updateOne(
+                {_id: this.finalQuery._id},
+                { $push: { ratings: this.finalQuery.ratings } }
+            )
+
+            db.default.collection(this.collectionName).find({ _id: this.finalQuery._id} )
+            .toArray((err, results) => {
+                if (err){
+                    throw err;
+                } else if(results.length === 0){
+                    this.response.send(HTTPStatusCodes.NOT_FOUND)
+                } else {
+                    const ratingsSum = results[0].ratings.reduce((a, b) => a + b)
+                    const oldData = { totalRating: results[0].totalRating }
+                    const newData = { $set: { totalRating: ratingsSum } }
+
+                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
+                        if (err){
+                            throw err;
+                        } else if(results.length === 0){
+                            this.response.send(HTTPStatusCodes.NOT_FOUND)
+                        } else {
+                            this.response.send(HTTPStatusCodes.OK)
+                        }
+                    })
+                }
+            })
+        }
+
         db.default.collection(this.collectionName).find(this.getFindQuery(), { projection: { _id: 0 } }).sort(this.getSortQuery()).toArray((err, results) => {
             if (err){
                 throw err;
             } else if(results.length === 0){
                 this.response.send(HTTPStatusCodes.NOT_FOUND)
             } else {
-                this.response.send(results)
+                return this.response.send(results)
             }
         })    
     }

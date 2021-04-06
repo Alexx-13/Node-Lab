@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes, UserRole, CollectionNames } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 import fs from 'fs'
 import { db } from '../../../app'
 import { AccountGeneralController } from '../../generalController'
@@ -33,22 +33,21 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
         this.finalQuery = new Object()
         let accountFinder = new AccountGeneralController(this.request, this.response)
 
-        // if(registerFinder.getUserRole() === UserRole.admin || UserRole.buyer){
-        if(this.requestStr.userName && this.requestStr.password){
-            this.finalQuery.userName = accountFinder.getUserName()
-            this.finalQuery.password = accountFinder.getPassword()
-            this.finalQuery.userRole = accountFinder.getUserRole()
-            this.finalQuery.firstName = accountFinder.getFirstName()
-            this.finalQuery.lastName = accountFinder.getLastName()
-            this.finalQuery.accessToken = accountFinder.handleAccessToken()
-            this.finalQuery.refreshToken = accountFinder.handleRefreshToken()
-            console.log(this.finalQuery)
-        } else {
-            return this.response.send(HTTPStatusCodes.BAD_REQUEST)
-        }
+        // if(accountFinder.getUserRole() === UserRole.admin || UserRole.buyer){
+            if(this.requestStr.userName && this.requestStr.password && this.requestStr.userRole){
+                this.finalQuery.userName = accountFinder.getUserName()
+                this.finalQuery.password = accountFinder.getPassword()
+                this.finalQuery.userRole = accountFinder.getUserRole()
+                this.finalQuery.firstName = accountFinder.getFirstName()
+                this.finalQuery.lastName = accountFinder.getLastName()
+                this.finalQuery.accessToken = accountFinder.handleAccessToken()
+                this.finalQuery.refreshToken = accountFinder.handleRefreshToken()
+                console.log(this.finalQuery)
+            } else {
+                return this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
 
-
-        return this.finalQuery
+            return this.finalQuery
         // }
         
     }

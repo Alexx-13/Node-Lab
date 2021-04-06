@@ -19,6 +19,9 @@ class Product extends Typegoose implements IProducts {
   
     @prop()
     public price!: number
+
+    @prop()
+    public ratings!: Array<number>
 }
   
 const ProductModel = new Product().getModelForClass(Product)

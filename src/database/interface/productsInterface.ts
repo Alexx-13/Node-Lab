@@ -5,6 +5,7 @@ interface IProducts {
     createdAt: Date
     minRating: number
     price: number
+    ratings: Array<number>
 }
 
 export default IProducts

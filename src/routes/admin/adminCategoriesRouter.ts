@@ -1,5 +1,5 @@
 import express, { Response } from 'express'
-import AdminControllerMongo from '../../database/mongo/controller/adminCategoriesController'
+import AdminControllerMongo from '../../database/mongo/controller/adminController'
 import AdminControllerPostgres from '../../database/postgres/controller/adminCategoriesController'
 const adminCategoriesRouter = express.Router()
 import bodyParser from 'body-parser'

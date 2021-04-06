@@ -1,10 +1,12 @@
 import { CollectionNames, HTTPStatusCodes } from '../../enum'
+import { ObjectId } from 'mongodb'
 
 interface IProductsGeneralController {
     getProductId()
     getDisplayName()
     getCategoriesIDs()
     getCreatedAt()
+    getRatings()
     getMinRating()
     getPrice()
     getSortQuery()
@@ -24,7 +26,7 @@ export default class ProductsGeneralController implements IProductsGeneralContro
 
     getProductId(){
         try {
-            return this.requestStr.id
+            return new ObjectId(this.requestStr.id)
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
@@ -50,6 +52,16 @@ export default class ProductsGeneralController implements IProductsGeneralContro
     getCreatedAt(){
         try {
             return this.requestStr.createdAt
+        } catch (err) {
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
+        }
+    }
+
+    getRatings(){
+        try {
+            if(parseInt(this.requestStr.rate) <= 10 && parseInt(this.requestStr.rate) >= 1){
+                return parseInt(this.requestStr.rate)
+            }
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
