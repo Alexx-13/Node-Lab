@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes, CollectionNames } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames, Errors, Success } from '../../../enum'
 const fs = require('fs')
 import { db } from '../../../app'
 import { ProfileGeneralController, AccountGeneralController } from '../../generalController'
@@ -10,11 +10,9 @@ interface ITokenControllerMongo {
     requestStr: { [queryParam: string]: string }
     collectionName: string
     finalQuery: Object | undefined
-    accessToken: string
-    refreshToken: string
 
-    setFinalQuery()
-    getFinalQuery()
+    // setFinalQuery()
+    // getFinalQuery()
     updateToken()
 }
 
@@ -23,68 +21,78 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
     readonly response: Response
     readonly collectionName: string = CollectionNames.account
     requestStr: { [queryParam: string]: string }
-    accessToken
-    refreshToken
     public finalQuery
 
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    setFinalQuery(){
-        this.finalQuery = new Object()
-        const profileFinder = new ProfileGeneralController(this.request, this.response)
-        
-        this.finalQuery.refreshToken = profileFinder.getLocalToken()
+    // async setFinalQuery(){
+    //     if(!this.finalQuery){
+    //         this.finalQuery = new Object()
+    //     }
 
-        return this.finalQuery
-    }
+    //     const profileFinder = new ProfileGeneralController(this.request, this.response)
 
-    async getFinalQuery(){
-        return await this.setFinalQuery()
-    }
+    //     if(this.requestStr.refreshToken){
+    //         this.finalQuery.refreshToken = await profileFinder.getLocalRefreshToken()
+    //         console.log(this.finalQuery, ' a')
+    //         return this.finalQuery
+    //     }
+
+    //     // return this.finalQuery
+    // }
+
+    // getFinalQuery(){
+    //     return this.setFinalQuery()
+    // }
 
     updateToken(){
-        try{
-            db.default.collection(this.collectionName).find(this.getFinalQuery()).toArray((err, results) => {
-                if(err){
-                    throw new err
-                } else if (results.length === 0) {
-                    this.response.send('Username or token incorrect')
-                } else {
-                    const accountFinder = new AccountGeneralController(this.request, this.response)
+        try {
+            const accountFinder = new AccountGeneralController(this.request, this.response)
 
-                    const oldData = { accessToken:  results[0].accessToken }
-                    const newData = { $set: { userAccessToken:  accountFinder.handleAccessToken() } }
-                    
-                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                        if (err) {
-                            throw new err
-                        } else if (results.length === 0){
-                            this.response.send('Incorrect refresh token was provided')
-                        } else {
-                            let jsonData = {
-                                userAccessToken: this.accessToken,
-                                userRefreshToken: this.refreshToken
-                            }
-        
-                            fs.writeFile('.tokens.json', 
+            db.default.collection(this.collectionName)
+            .find({ refreshToken: this.requestStr.refreshToken })
+            .toArray((err, results) => {
+                    if(err){
+                        throw new err
+                    } else if (results.length === 0) {
+                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                    } else {
+                        const oldAccessToken = results[0].accessToken
+                        const newAccessToken = accountFinder.handleAccessToken()
+                        const oldRefreshToken = results[0].refreshToken
+                        const oldData = { accessToken:  oldAccessToken }
+                        const newData = { $set: { accessToken:  newAccessToken } }
+
+                        let jsonData = {
+                            userAccessToken: newAccessToken,
+                            userRefreshToken: oldRefreshToken
+                        }
+
+                        db.default.collection(this.collectionName)
+                        .updateOne(oldData, newData, (err, results) => {
+                            if(err){
+                                throw new err
+                            } else if(results.length === 0){
+                                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                            } else {
+                                fs.writeFile('.tokens.json', 
                                 JSON.stringify(jsonData),
                                 (err) => {
                                     if(err){ 
-                                        throw err
+                                        this.response.send(`${Errors.accessToken} ${Errors.refreshToken}`)
                                     } else {
-                                        this.response.send('Access token was successfully refreshed')
+                                        this.response.send(Success.accessTokenRefresh)
                                     }
                                 })
-                        }
-                    })
-                }
-            })
+                            }
+                        })
+                    }
+                })
         } catch(err){
-            console.log(err)
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }

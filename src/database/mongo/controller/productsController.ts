@@ -12,6 +12,14 @@ interface IProductsControllerMongo {
     collectionNameRatings?: string
     finalQuery: Object | undefined
     sortQuery: Object | undefined
+
+    setRatingsQuery()
+    getRatingsQuery()
+    setFindQuery()
+    getFindQuery()
+    setSortQuery()
+    getSortQuery()
+    makeDBSearch()
 }
 
 export default class ProductsControllerMongo implements IProductsControllerMongo {
@@ -22,7 +30,6 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     public collectionNameRatings = CollectionNames.ratings
     public finalQuery
     public sortQuery
-    public userRating: number | undefined
 
     constructor(request, response){
         this.request = request
@@ -50,7 +57,10 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     }
 
     setFindQuery(){
-        this.finalQuery = new Object()
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let productsFinder = new ProductsGeneralController(this.request, this.response)
 
         if(this.requestStr.displayName){
@@ -73,6 +83,10 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
     }
 
     setSortQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let productsFinder = new ProductsGeneralController(this.request, this.response)
 
         if(this.requestStr.sortBy){
@@ -88,31 +102,65 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
         if(this.requestStr.id && this.requestStr.rate){
             this.getRatingsQuery()
 
-            db.default.collection(this.collectionName).updateOne(
+            db.default.collection(this.collectionName)
+            .updateOne( // get document by id and push rating value into ratings array
                 {_id: this.finalQuery._id},
-                { $push: { ratings: this.finalQuery.ratings } }
+                { $push: { ratings: this.finalQuery.ratings } },
+                ((err, results) => {
+                    if (err){
+                        throw err;
+                    } else if(results.length === 0){
+                        this.response.send(HTTPStatusCodes.NOT_FOUND)
+                    } else {
+
+                        io.sockets.on('connection', (socket) => { // ALEX асинхронность
+                            console.log('WebScoket in products controller connected!');
+                            
+                            socket.emit('rating', results)
+                            
+                            socket.on('disconnect', () => {
+                                console.log('WebScoket in products controller disconnected!')
+                            })
+                        })
+
+                        db.default.collection(this.collectionNameRatings)
+                        .find()
+                        .toArray((err, results) => { // get lastRatings document
+                            if (err){
+                                throw err;
+                            } else if(results.length === 0){
+                                this.response.send(HTTPStatusCodes.NOT_FOUND)
+                            } else {
+                                const currentRatingsDocument = results[0]
+                                
+                                db.default.collection(this.collectionNameRatings)
+                                .updateOne( // get lastRatings document by id and push rating value into ratings array
+                                    { _id: currentRatingsDocument._id },
+                                    { $push: { ratings: this.finalQuery.ratings } } // ALEX асинхронность нужна
+                                )
+                            }
+                        })
+
+                    }
+                })
             )
 
-            db.default.collection(this.collectionName).find({ _id: this.finalQuery._id} )
+            db.default.collection(this.collectionName)
+            .find({ _id: this.finalQuery._id} ) // get document by id
             .toArray((err, results) => {
                 if (err){
                     throw err;
                 } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    const ratingsSum = results[0].ratings.reduce((a, b) => a + b)
-                    const oldData = { totalRating: results[0].totalRating }
-                    const newData = { $set: { totalRating: ratingsSum } }
+                    const currentProductDocument = results[0]
+                    const ratingsSum = currentProductDocument.ratings.reduce((a, b) => a + b)
 
-                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                        if (err){
-                            throw err;
-                        } else if(results.length === 0){
-                            this.response.send(HTTPStatusCodes.NOT_FOUND)
-                        } else {
-                            this.response.send(HTTPStatusCodes.OK)
-                        }
-                    })
+                    db.default.collection(this.collectionName)
+                    .updateOne( // update documents totalRating with sum of ratings
+                        { _id: currentProductDocument._id},
+                        { $set: { totalRating: ratingsSum } }
+                    )
                 }
             })
         }

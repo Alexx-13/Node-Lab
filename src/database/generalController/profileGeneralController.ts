@@ -1,9 +1,11 @@
-import { CollectionNames } from '../../enum'
-import fs from 'fs'
+import { CollectionNames, Errors, HTTPStatusCodes } from '../../enum'
+import fs, { readFileSync } from 'fs'
 import util from 'util'
 
 interface IProfileGeneralController {
-    getLocalToken()
+    collectionName: string
+    requestStr: object
+    
     getOldPassword()
     getNewPassword()
     getPasswordQuery()
@@ -21,25 +23,11 @@ export default class ProfileGeneralController implements IProfileGeneralControll
         this.requestStr = this.request.body
     }
 
-    async getLocalToken(){
-        try{
-            const readFileContent = util.promisify(fs.readFile)
-            const data = await readFileContent('.tokens.json').toString()
-
-            if(JSON.parse(data).accessToken){
-                return JSON.parse(data).accessToken
-            }
-
-        } catch (err) {
-            throw new err
-        }
-    }
-
     getOldPassword(){
         try {
             return this.requestStr.oldPassword
         } catch (err) {
-            throw new err
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -47,7 +35,7 @@ export default class ProfileGeneralController implements IProfileGeneralControll
         try {
             return this.requestStr.newPassword
         } catch (err) {
-            throw new err
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -55,9 +43,7 @@ export default class ProfileGeneralController implements IProfileGeneralControll
         try {
             return this.getNewPassword()
         } catch (err) {
-            throw new err
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
-    
-    
 }

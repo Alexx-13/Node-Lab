@@ -1,7 +1,10 @@
-import { CollectionNames } from '../../enum'
+import { CollectionNames, HTTPStatusCodes, Errors, UserRole } from '../../enum'
 import randtoken from 'rand-token'
 
 interface IAccountGeneralController {
+    collectionName: string
+    requestStr: object
+
     getId()
     getUserName()
     getFirstName()
@@ -10,6 +13,8 @@ interface IAccountGeneralController {
     getAccessToken()
     getRefreshToken()
     getUserRole()
+    handleAccessToken()
+    handleRefreshToken()
 }
 
 export default class AccountGeneralController implements IAccountGeneralController{
@@ -28,7 +33,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr._id
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -36,7 +41,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.userName
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -44,7 +49,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.firstName
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -52,7 +57,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.lastName
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -60,7 +65,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.password
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -68,7 +73,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.accessToken
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -76,15 +81,17 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try {
             return this.requestStr.refreshToken
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
     getUserRole(){
         try{
-            return this.requestStr.userRole
+            if(this.requestStr.userRole === UserRole.admin || this.requestStr.userRole ===UserRole.buyer){
+                return this.requestStr.userRole
+            }
         } catch(err){
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -92,7 +99,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try{
             return randtoken.generate(54)
         } catch (err) {
-            throw new err
+            this.response.send(Errors.accessToken)
         }
     }
 
@@ -100,7 +107,7 @@ export default class AccountGeneralController implements IAccountGeneralControll
         try{
             return randtoken.generate(54)
         } catch (err) {
-            throw new err
+            this.response.send(Errors.refreshToken)
         }
     }
 }

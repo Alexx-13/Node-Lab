@@ -2,11 +2,15 @@ import { CollectionNames, HTTPStatusCodes } from '../../enum'
 import { ObjectId } from 'mongodb'
 
 interface IProductsGeneralController {
+    collectionName: string
+    requestStr: object
+
     getProductId()
     getDisplayName()
     getCategoriesIDs()
     getCreatedAt()
     getRatings()
+    getAllRatings()
     getMinRating()
     getPrice()
     getSortQuery()
@@ -67,6 +71,16 @@ export default class ProductsGeneralController implements IProductsGeneralContro
         }
     }
 
+    getAllRatings(){
+        try {
+            if(parseInt(this.requestStr.rate) <= 10 && parseInt(this.requestStr.rate) >= 1){
+                return parseInt(this.requestStr.rate)
+            }
+        } catch (err) {
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
+        }
+    }
+
     getMinRating(){
         try {
             return parseInt(this.requestStr.minRating)
@@ -108,7 +122,6 @@ export default class ProductsGeneralController implements IProductsGeneralContro
             } else {
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
-            
         } catch(err){  
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
@@ -135,7 +148,7 @@ export default class ProductsGeneralController implements IProductsGeneralContro
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
         } catch(err){  
-            throw new err
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 }

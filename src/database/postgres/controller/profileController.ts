@@ -10,7 +10,7 @@ interface IProfileControllerMongo {
     requestStr: { [queryParam: string]: string }
     collectionName: string
 
-    getLocalToken()
+    getLocalAccessToken()
     getUserName()
     getFirstName()
     getLastName()
@@ -35,7 +35,7 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
         this.requestStr = this.request.body
     }
 
-    async getLocalToken(){
+    async getLocalAccessToken(){
         try{
             const readFileContent = util.promisify(fs.readFile)
             const data = await readFileContent('.tokens.json').toString()

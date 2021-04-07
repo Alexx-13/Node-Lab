@@ -1,37 +1,19 @@
 import express, { Response } from 'express'
 import ProfileControllerMongo from '../../database/mongo/controller/profileController'
 import ProfileControllerPostgres from '../../database/postgres/controller/profileController'
-import cookieSession from 'cookie-session'
 
 const profilePasswordRouter = express.Router()
 
 import bodyParser from 'body-parser'
 
 const runDBSearch = (DBName) => {
-    profilePasswordRouter.use(cookieSession({
-        name: 'session',
-        keys: ['key1', 'key2']
-    }))
-
-    profilePasswordRouter.get(
-        "/",
-        bodyParser.urlencoded({ extended: false }),
-        (request, response) => {
-            if(request.session.isAuth === true){
-                // response.sendFile(process.cwd() + '/src/client/profilePassword.html')
-                response.send('You are authenticated')
-            } else {
-                response.send('You are unauthenticated' + request.session.isAuth)
-            }
-        }
-    )
-
     if(DBName === 'mongo'){
         profilePasswordRouter.post(
             "/",
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true'){
+                    console.log(process.argv[3])
                     const profileControllerMongo = new ProfileControllerMongo(request, response)
                     profileControllerMongo.updateAccountPasswordCollection()
                 } else {
@@ -45,7 +27,7 @@ const runDBSearch = (DBName) => {
             "/",
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true'){
                     const profileControllerMongo = new ProfileControllerPostgres(request, response)
                     profileControllerMongo.updateAccountPasswordCollection()
                 } else {

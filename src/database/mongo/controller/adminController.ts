@@ -1,12 +1,22 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes, CollectionNames } from '../../../enum'
-import { ProductsGeneralController, ProfileGeneralController } from '../../generalController'
+import { HTTPStatusCodes, CollectionNames, Errors } from '../../../enum'
+import { ProductsGeneralController } from '../../generalController'
+import { getLocalAccessToken } from '../../../service'
 import { db } from '../../../app'
 import { ObjectId } from 'mongodb'
 
 interface IAdminControllerMongo {
     finalQuery: Object | undefined
     isAdminRole: boolean
+    collectionName: string
+
+    getAccountRole()
+    setFindQueryById()
+    getFindQueryById()
+    makeDBSearchById()
+    makeDBPost()
+    makeDBDeleteById()
+    makeDBPatchById()
 }
 
 export default class AdminControllerMongo implements IAdminControllerMongo{
@@ -14,20 +24,21 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
     public accounCollectionName = CollectionNames.account
-    public collectionName = CollectionNames.products
-    public productId: string | undefined
+    public collectionName
     public finalQuery
     public isAdminRole
 
-    constructor(request, response){
+    constructor(request, response, current){
         this.request = request
         this.response = response
         this.requestStr = request.query
+        this.collectionName = current
     }
 
     getAccountRole(){
-        const profileFinder = new ProfileGeneralController(this.request, this.response)
-        db.default.collection(this.accounCollectionName).find({accessToken: profileFinder.getLocalToken()}).toArray((err, results) => {
+        db.default.collection(this.accounCollectionName)
+        .find({ accessToken: getLocalAccessToken() })
+        .toArray((err, results) => {
             if(err){
                 throw err
             } else if(results.length === 0){
@@ -57,10 +68,13 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
 
     makeDBSearchById(){
         this.getAccountRole()
+
         if(this.isAdminRole){
-            db.default.collection(this.collectionName).find(this.getFindQueryById()).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .find(this.getFindQueryById())
+            .toArray((err, results) => {
                 if (err){
-                    throw err;
+                    throw err
                 } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
@@ -68,14 +82,17 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
                 }
             })    
         } else {
-            this.response.send('You are not an admin')
+            this.response.send(Errors.falseAdmin)
         }
     }
 
     makeDBPost(){
         this.getAccountRole()
+
         if(this.isAdminRole){
-            db.default.collection(this.collectionName).insertOne(this.requestStr).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .insertOne(this.requestStr)
+            .toArray((err, results) => {
                 if (err){
                     throw err;
                 } else if(results.length === 0){
@@ -85,14 +102,17 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
                 }
             }) 
         } else {
-            this.response.send('You are not an admin')
+            this.response.send(Errors.falseAdmin)
         }
     }
 
     makeDBDeleteById(){
         this.getAccountRole()
+
         if(this.isAdminRole){
-            db.default.collection(this.collectionName).deleteOne(this.getFindQueryById()).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .deleteOne(this.getFindQueryById())
+            .toArray((err, results) => {
                 if (err){
                     throw err;
                 } else if(results.length === 0){
@@ -102,20 +122,25 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
                 }
             })    
         } else {
-            this.response.send('You are not an admin')
+             this.response.send(Errors.falseAdmin)
         }
     }
 
     makeDBPatchById(){
         this.getAccountRole()
+
         if(this.isAdminRole){
-            db.default.collection(this.collectionName).find(this.getFindQueryById()).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .find(this.getFindQueryById())
+            .toArray((err, results) => {
                 if (err){
                     throw err
                 } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 } else {
-                    db.default.collection(this.collectionName).update(this.requestStr).toArray((err, results) => {
+                    db.default.collection(this.collectionName)
+                    .update(this.requestStr)
+                    .toArray((err, results) => {
                         if (err){
                             throw err
                         } else if(results.length === 0){
@@ -127,7 +152,7 @@ export default class AdminControllerMongo implements IAdminControllerMongo{
                 }
             }) 
         } else {
-            this.response.send('You are not an admin')
+            this.response.send(Errors.falseAdmin)
         }
     }
 }

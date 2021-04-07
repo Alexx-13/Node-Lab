@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes, CollectionNames } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames, Success, Errors } from '../../../enum'
 import fs from 'fs'
 import { db } from '../../../app'
 import { AccountGeneralController } from '../../generalController'
@@ -30,26 +30,30 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
     }
 
     setFindQuery() {
-        this.finalQuery = new Object()
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let accountFinder = new AccountGeneralController(this.request, this.response)
 
-        // if(accountFinder.getUserRole() === UserRole.admin || UserRole.buyer){
-            if(this.requestStr.userName && this.requestStr.password && this.requestStr.userRole){
-                this.finalQuery.userName = accountFinder.getUserName()
-                this.finalQuery.password = accountFinder.getPassword()
-                this.finalQuery.userRole = accountFinder.getUserRole()
-                this.finalQuery.firstName = accountFinder.getFirstName()
-                this.finalQuery.lastName = accountFinder.getLastName()
-                this.finalQuery.accessToken = accountFinder.handleAccessToken()
-                this.finalQuery.refreshToken = accountFinder.handleRefreshToken()
-                console.log(this.finalQuery)
-            } else {
-                return this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
+        if(this.requestStr.userRole){
+            this.finalQuery.userRole = accountFinder.getUserRole()
+            process.argv[4] = this.finalQuery.userRole
+        }
 
-            return this.finalQuery
-        // }
-        
+        if(this.requestStr.userName && this.requestStr.password){
+            this.finalQuery.userName = accountFinder.getUserName()
+            this.finalQuery.password = accountFinder.getPassword()
+            this.finalQuery.userRole = accountFinder.getUserRole()
+            this.finalQuery.firstName = accountFinder.getFirstName()
+            this.finalQuery.lastName = accountFinder.getLastName()
+            this.finalQuery.accessToken = accountFinder.handleAccessToken()
+            this.finalQuery.refreshToken = accountFinder.handleRefreshToken()
+        } else {
+            return this.response.send(HTTPStatusCodes.BAD_REQUEST)
+        }
+
+        return this.finalQuery
     }
 
     getFindQuery() {
@@ -62,7 +66,9 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
 
     setAccountCollection(){
         try{
-            db.default.collection(this.collectionName).insertOne(this.getFindQuery(), (err, results) => {
+            console.log(1)
+            db.default.collection(this.collectionName)
+            .insertOne(this.getFindQuery(), (err, results) => {
                 if(err){
                     throw new err
                 } else if(results.length === 0){
@@ -77,16 +83,16 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
                         JSON.stringify(jsonData),
                         (err) => {
                         if(err){
-                            this.response.send(HTTPStatusCodes.NOT_FOUND)
+                            this.response.send(`${Errors.accessToken} ${Errors.refreshToken}`)
                         } else {
-                            this.request.session.isAuth = true
-                            this.response.send('Account was successfully created' + this.request.session.isAuth)
+                            process.argv[3] = 'true'
+                            this.response.send(`${Success.accountCreate} ${this.request.session.isAuth}`)
                         }
                     })
                 }
             })
         } catch(err){
-            throw new err
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 }

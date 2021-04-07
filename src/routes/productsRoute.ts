@@ -25,14 +25,6 @@ const runDBSearch = (DBName) => {
             const productsController = new ProductsControllerPostgres(request, response)
             productsController.makeDBSearch()
         })
-
-        productRouter.post("/:id/rate/:value", paginationHandler(ProductsModel), async (request, response: Response) => {
-            const roleHandler = new RoleHandler(request, response)
-            if (request.session.isAuth === true && roleHandler.getUserRolePostgres() === UserRole.buyer ){
-                const productsController = new ProductsControllerPostgres(request, response)
-                productsController.makeDBRatingUpdate()
-            }
-        })
     }
 }
 

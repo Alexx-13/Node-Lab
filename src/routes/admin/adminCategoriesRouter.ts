@@ -1,22 +1,19 @@
 import express, { Response } from 'express'
 import AdminControllerMongo from '../../database/mongo/controller/adminController'
 import AdminControllerPostgres from '../../database/postgres/controller/adminCategoriesController'
+import { UserRole } from '../../enum'
 const adminCategoriesRouter = express.Router()
 import bodyParser from 'body-parser'
-import cookieSession from 'cookie-session'
 
 const runDBSearch = (DBName) => {
-    adminCategoriesRouter.use(cookieSession({
-        name: 'session',
-        keys: ['key1', 'key2']
-    }))
+    const current = 'categories'
 
     if(DBName === 'mongo'){
-        adminCategoriesRouter.get("/:id", 
+        adminCategoriesRouter.get("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
-                    const adminController = new AdminControllerMongo(request, response)
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
+                    const adminController = new AdminControllerMongo(request, response, current)
                     adminController.makeDBSearchById()
                 } else {
                     response.send('You are unauthenticated' + request.session.isAuth)
@@ -27,8 +24,8 @@ const runDBSearch = (DBName) => {
         adminCategoriesRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
-                    const adminController = new AdminControllerMongo(request, response)
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
+                    const adminController = new AdminControllerMongo(request, response, current)
                     adminController.makeDBPost()
                 } else {
                     response.send('You are unauthenticated' + request.session.isAuth)
@@ -36,11 +33,11 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminCategoriesRouter.delete("/:id", 
+        adminCategoriesRouter.delete("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
-                    const adminController = new AdminControllerMongo(request, response)
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
+                    const adminController = new AdminControllerMongo(request, response, current)
                     adminController.makeDBDeleteById()
                 }  else {
                     response.send('You are unauthenticated' + request.session.isAuth)
@@ -48,11 +45,11 @@ const runDBSearch = (DBName) => {
             }
         )
 
-        adminCategoriesRouter.patch("/:id", 
+        adminCategoriesRouter.patch("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
-                    const adminController = new AdminControllerMongo(request, response)
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
+                    const adminController = new AdminControllerMongo(request, response, current)
                     adminController.makeDBPatchById()
                 } else {
                     response.send('You are unauthenticated' + request.session.isAuth)
@@ -64,7 +61,7 @@ const runDBSearch = (DBName) => {
         adminCategoriesRouter.get("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
                     const adminController = new AdminControllerPostgres(request, response)
                     adminController.makeDBSearchById()
                 } else {
@@ -76,7 +73,7 @@ const runDBSearch = (DBName) => {
         adminCategoriesRouter.post("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
                     const adminController = new AdminControllerPostgres(request, response)
                     adminController.makeDBPost()
                 } else {
@@ -88,7 +85,7 @@ const runDBSearch = (DBName) => {
         adminCategoriesRouter.delete("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
                     const adminController = new AdminControllerPostgres(request, response)
                     adminController.makeDBDeleteById()
                 } else {
@@ -100,7 +97,7 @@ const runDBSearch = (DBName) => {
         adminCategoriesRouter.patch("/", 
             bodyParser.urlencoded({ extended: false }),
             async (request, response: Response) => {
-                if(request.session.isAuth === true){
+                if(process.argv[3] === 'true' && process.argv[4] === UserRole.admin){
                     const adminController = new AdminControllerPostgres(request, response)
                     adminController.getDBPatchByIdQuery()
                 } else {

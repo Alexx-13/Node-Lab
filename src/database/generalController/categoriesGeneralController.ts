@@ -2,6 +2,9 @@ import { ObjectId } from 'mongodb'
 import { HTTPStatusCodes, CollectionNames } from '../../enum'
 
 interface ICategoriesGeneralController {
+    collectionName: string
+    requestStr: object
+
     getCategoryId()
     getDisplayName()
     getIncludeProducts()
@@ -24,7 +27,7 @@ export default class CategoriesGeneralController implements ICategoriesGeneralCo
         try {
             return new ObjectId(this.requestStr.id)
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
@@ -32,37 +35,29 @@ export default class CategoriesGeneralController implements ICategoriesGeneralCo
         try {
             return this.requestStr.displayName
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
     getIncludeProducts(){
         try {
-            if(this.requestStr.includeProducts){
-                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
-                    return true
-                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
-                    return false
-                } else {
-                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
-                }
+            if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
+                return true
+            } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
+                return false
             }
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
     getIncludeTop3Products(){
         try {
-            if(this.requestStr.includeTop3Products){
-                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
-                    return 3
-                } else {
-                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
-                } 
+            if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
+                return 3
             }
         } catch (err) {
-            throw new err
+            this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 }

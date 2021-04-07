@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { HTTPStatusCodes, CollectionNames } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames, Errors } from '../../../enum'
 import { AccountGeneralController } from '../../generalController'
 import { db } from '../../../app'
 
@@ -29,7 +29,10 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
     }
 
     setFindQuery(){
-        this.finalQuery = new Object()
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let accountFinder = new AccountGeneralController(this.request, this.response)
 
         this.finalQuery.userName = accountFinder.getUserName()
@@ -44,17 +47,20 @@ export default class AuthenticateControllerMongo implements IAuthenticateControl
 
     getToken() {
         try {
-            db.default.collection(this.collectionName).find(this.getFindQuery()).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .find(this.getFindQuery())
+            .toArray((err, results) => {
                 if(err){
                     throw new err
                 } else if (results.length === 0){
-                    this.response.send('Username or password incorrect')
+                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
                 } else {
+                    process.argv[3] = 'true'
                     this.response.send(results[0].accessToken)
                 }
             })
         } catch (err) {
-            this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            this.response.send(Errors.accessTokenRemote)
         }
     }
 }

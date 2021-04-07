@@ -6,18 +6,20 @@ import { CategoriesGeneralController } from '../../generalController'
 interface ICategoriesControllerMongo {
     request: Request
     response: Response
-    includeProducts?: boolean | undefined
-    includeTop3Products?: number | undefined
     requestStr: { [queryParam: string]: string }
     finalQuery: Object | undefined
     collectionName: string
+
+    setFindQuery()
+    getFindQuery()
+    setDetailedFindQuery()
+    getDetailedFindQuery()
+    makeDBSearch()
 }
 
 export default class CategoriesControllerMongo implements ICategoriesControllerMongo {
     readonly request: Request
     readonly response: Response
-    public includeProducts: boolean | undefined
-    public includeTop3Products: number | undefined
     public requestStr: { [queryParam: string]: string }
     public finalQuery
     public collectionName = CollectionNames.categories
@@ -29,7 +31,10 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
     }       
 
     setFindQuery(){
-        this.finalQuery = new Object()
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
 
         if(this.requestStr.id){
@@ -44,6 +49,10 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
     }
 
     setDetailedFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
         let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
 
         if(this.requestStr.includeProducts){
@@ -64,7 +73,9 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
     makeDBSearch(){
         this.getFindQuery()
 
-        db.default.collection(this.collectionName).find(this.getFindQuery()).toArray((err, results) => {
+        db.default.collection(this.collectionName)
+        .find(this.getFindQuery())
+        .toArray((err, results) => {
             if (err){
                 throw err
             } else if(results.length === 0){
@@ -73,7 +84,8 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
                 this.getDetailedFindQuery()
 
                 if(this.finalQuery.includeProducts && this.finalQuery.includeTop3Products){
-                    db.default.collection(this.collectionName).aggregate([
+                    db.default.collection(this.collectionName)
+                    .aggregate([
                         {
                             $lookup:
                             {
@@ -83,7 +95,8 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
                                 as: CollectionNames.products
                             }
                         }
-                    ]).toArray((err, results) => {
+                    ])
+                    .toArray((err, results) => {
                         if (err) {
                             throw err
                         } else if (results.length === 0) {
