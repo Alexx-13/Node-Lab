@@ -66,7 +66,6 @@ export default class RegisterControllerMongo implements IRegisterControllerMongo
 
     setAccountCollection(){
         try{
-            console.log(1)
             db.default.collection(this.collectionName)
             .insertOne(this.getFindQuery(), (err, results) => {
                 if(err){

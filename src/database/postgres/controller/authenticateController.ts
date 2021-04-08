@@ -1,5 +1,6 @@
 import { Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames, Errors } from '../../../enum'
+import { AccountGeneralController } from '../../generalController'
 import { db } from '../../../app'
 
 interface IAuthenticateControllerPostgres {
@@ -7,83 +8,63 @@ interface IAuthenticateControllerPostgres {
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
+    finalQuery: Object | undefined
 
-    getUserName()
-    getUserUnhashedPassword()
-    setFinalQuery()
-    getFinalQuery()
+    setFindQuery()
+    getFindQuery()
     getToken()
 }
 
 export default class AuthenticateControllerPostgres implements IAuthenticateControllerPostgres {
     readonly request
     readonly response
-    readonly collectionName: string = 'account'
-    public finalQuery = {
-        userName: '',
-        userPassword: ''
-    }
+    readonly collectionName: string = CollectionNames.account
+    public finalQuery
     requestStr: { [queryParam: string]: string }
 
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    getUserName() {
-        try{
-            return this.requestStr.user_field
-        } catch(err){
-            throw new err
+    setFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        let accountFinder = new AccountGeneralController(this.request, this.response)
+
+        this.finalQuery.userName = accountFinder.getUserName()
+        this.finalQuery.password = accountFinder.getPassword()
+
+        return this.finalQuery
     }
 
-    getUserUnhashedPassword() { 
-        try{
-            return this.requestStr.userPassword
-        } catch(err){
-            throw new err
-        }
-    }
-
-    setFinalQuery(){
-        try{
-            this.finalQuery = {
-                userName: this.getUserName(),
-                userPassword: this.getUserUnhashedPassword()
-            }
-            return `SELECT userAccessToken from ${this.collectionName} 
-                WHERE userName = ${this.finalQuery.userName} 
-                AND userPassword = ${this.finalQuery.userPassword}
-                `
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getFinalQuery() {
-        try{
-            return this.setFinalQuery()
-        } catch(err){
-            throw new err
-        }
+    getFindQuery() {
+        return this.setFindQuery()
     }
 
     getToken() {
         try {
-            db.default.query(this.getFinalQuery(), (err, results) => {
+            const customQuery = 
+            `SELECT accessToken from ${this.collectionName} 
+            WHERE userName = ${this.finalQuery.userName} 
+            AND password = ${this.finalQuery.userPassword}
+            `
+            db.default.query(customQuery, (err, results) => {
                 if (err){
                     throw new err
                 } else if (!results.row){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
+                    process.argv[3] = 'true'
+                    // this.response.send(results[0].accessToken)
                     this.response.send(results.row)
                 }
             })
         } catch (err) {
-            throw new err
+            this.response.send(Errors.accessTokenRemote)
         }
     }
 }

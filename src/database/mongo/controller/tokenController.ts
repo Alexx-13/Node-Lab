@@ -2,7 +2,7 @@ import { Response } from 'express'
 import { HTTPStatusCodes, CollectionNames, Errors, Success } from '../../../enum'
 const fs = require('fs')
 import { db } from '../../../app'
-import { ProfileGeneralController, AccountGeneralController } from '../../generalController'
+import { AccountGeneralController } from '../../generalController'
 
 interface ITokenControllerMongo {
     request
@@ -11,8 +11,6 @@ interface ITokenControllerMongo {
     collectionName: string
     finalQuery: Object | undefined
 
-    // setFinalQuery()
-    // getFinalQuery()
     updateToken()
 }
 
@@ -28,26 +26,6 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
         this.response = response
         this.requestStr = this.request.query
     }
-
-    // async setFinalQuery(){
-    //     if(!this.finalQuery){
-    //         this.finalQuery = new Object()
-    //     }
-
-    //     const profileFinder = new ProfileGeneralController(this.request, this.response)
-
-    //     if(this.requestStr.refreshToken){
-    //         this.finalQuery.refreshToken = await profileFinder.getLocalRefreshToken()
-    //         console.log(this.finalQuery, ' a')
-    //         return this.finalQuery
-    //     }
-
-    //     // return this.finalQuery
-    // }
-
-    // getFinalQuery(){
-    //     return this.setFinalQuery()
-    // }
 
     updateToken(){
         try {

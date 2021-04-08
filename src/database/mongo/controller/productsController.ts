@@ -18,7 +18,7 @@ interface IProductsControllerMongo {
     setFindQuery()
     getFindQuery()
     setSortQuery()
-    getSortQuery()
+    getSortQueryMongo()
     makeDBSearch()
 }
 
@@ -72,7 +72,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
         }
 
         if(this.requestStr.price){
-            this.finalQuery.price = productsFinder.getPrice()
+            this.finalQuery.price = productsFinder.getPriceMongo()
         }
 
         return this.finalQuery
@@ -90,11 +90,11 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
         let productsFinder = new ProductsGeneralController(this.request, this.response)
 
         if(this.requestStr.sortBy){
-            return this.sortQuery = productsFinder.getSortQuery()
+            return this.sortQuery = productsFinder.getSortQueryMongo()
         }
     }
 
-    getSortQuery(){
+    getSortQueryMongo(){
         return this.setSortQuery()
     }
 
@@ -113,7 +113,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
                         this.response.send(HTTPStatusCodes.NOT_FOUND)
                     } else {
 
-                        io.sockets.on('connection', (socket) => { // ALEX асинхронность
+                        io.sockets.on('connection', (socket) => {
                             console.log('WebScoket in products controller connected!');
                             
                             socket.emit('rating', results)
@@ -136,7 +136,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
                                 db.default.collection(this.collectionNameRatings)
                                 .updateOne( // get lastRatings document by id and push rating value into ratings array
                                     { _id: currentRatingsDocument._id },
-                                    { $push: { ratings: this.finalQuery.ratings } } // ALEX асинхронность нужна
+                                    { $push: { ratings: this.finalQuery.ratings } }
                                 )
                             }
                         })
@@ -165,7 +165,7 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
             })
         }
 
-        db.default.collection(this.collectionName).find(this.getFindQuery(), { projection: { _id: 0 } }).sort(this.getSortQuery()).toArray((err, results) => {
+        db.default.collection(this.collectionName).find(this.getFindQuery(), { projection: { _id: 0 } }).sort(this.getSortQueryMongo()).toArray((err, results) => {
             if (err){
                 throw err;
             } else if(results.length === 0){

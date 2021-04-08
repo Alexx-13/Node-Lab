@@ -4,8 +4,6 @@ import { HTTPStatusCodes, CollectionNames, Success } from '../../../enum'
 import { ProfileGeneralController, AccountGeneralController } from '../../generalController'
 import { getLocalAccessToken } from '../../../service'
 
-
-
 interface IProfileControllerMongo {
     request
     response: Response
@@ -91,7 +89,6 @@ export default class ProfileControllerMongo implements IProfileControllerMongo {
         }
 
         let accountFinder = new AccountGeneralController(this.request, this.response)
-        let profileFinder = new ProfileGeneralController(this.request, this.response)
 
         if(this.requestStr.userName){
             this.finalQuery.userName = accountFinder.getUserName()

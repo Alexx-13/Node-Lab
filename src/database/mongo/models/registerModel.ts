@@ -9,16 +9,19 @@ class Register extends Typegoose implements IRegister {
     public userName!: string
 
     @prop()
-    public userPassword!: string
+    public password!: string
 
     @prop()
-    public userFirstName?: string
+    public firstName?: string
 
     @prop()
-    public userLastName?: string
+    public lastName?: string
 
     @prop()
-    public userAccessToken!: string;
+    public accessToken!: string;
+
+    @prop()
+    public refreshToken!: string;
 }
 
 const RegisterModel = new Register().getModelForClass(Register)

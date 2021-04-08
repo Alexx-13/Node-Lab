@@ -12,8 +12,10 @@ interface IProductsGeneralController {
     getRatings()
     getAllRatings()
     getMinRating()
-    getPrice()
-    getSortQuery()
+    getPriceMongo()
+    getPricePostgres()
+    getSortQueryMongo()
+    getSortQueryPostgres()
 }
 
 export default class ProductsGeneralController implements IProductsGeneralController{
@@ -89,7 +91,7 @@ export default class ProductsGeneralController implements IProductsGeneralContro
         }
     }
 
-    getPrice(){
+    getPriceMongo(){
         try{
             const priceStr: string = this.requestStr.price
             let priceArr: Array<string> | Array<number> | undefined = priceStr.split('')
@@ -127,7 +129,49 @@ export default class ProductsGeneralController implements IProductsGeneralContro
         }
     }
 
-    getSortQuery(){
+    getPricePostgres(){
+        try{
+        const priceStr = this.requestStr.price
+        let priceArr: Array<string> | Array<number> | undefined 
+
+        let minPrice
+        let maxPrice
+
+        if(priceStr){
+            priceArr = priceStr.split('')
+            
+            if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
+                if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
+                    minPrice = priceStr.split(':')[0]
+                    maxPrice = priceStr.split(':')[1]
+                    return `price <= ${maxPrice} AND price >= ${minPrice}`
+                } else {
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                }
+            } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
+                if(parseInt(priceStr.split(':')[1])){
+                    minPrice = priceStr.split(':')[1]
+                    return  `price >= ${minPrice}`
+                } else {
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                }
+            } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
+                if(parseInt(priceStr.split(':')[0])){
+                    maxPrice = priceStr.split(':')[0]
+                    return `price <= ${maxPrice}`
+                } else {
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                }
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        }
+    } catch(err){
+        throw new err
+    }
+    }
+
+    getSortQueryMongo(){
         try {
             const sortByStr: number | string = this.requestStr.sortBy
             let sortQuery
@@ -148,6 +192,24 @@ export default class ProductsGeneralController implements IProductsGeneralContro
                 this.response.send(HTTPStatusCodes.BAD_REQUEST)
             }
         } catch(err){  
+            this.response.send(HTTPStatusCodes.BAD_REQUEST)
+        }
+    }
+
+    getSortQueryPostgres(){
+        try{
+            const sortByStr: number | string = this.requestStr.sortBy
+            const queryField = sortByStr.split(':')[0]
+            const querySortBy = sortByStr.split(':')[1].toLocaleLowerCase()
+
+            if(querySortBy === 'desc'){
+                return  `ORDER BY ${queryField} DESC`
+            } else if (querySortBy === 'asc'){
+                return `ORDER BY ${queryField} ASC`
+            } else {
+                this.response.send(HTTPStatusCodes.BAD_REQUEST)
+            }
+        } catch(err){
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
