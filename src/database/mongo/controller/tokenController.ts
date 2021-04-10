@@ -46,8 +46,8 @@ export default class TokenControllerMongo implements ITokenControllerMongo {
                         const newData = { $set: { accessToken:  newAccessToken } }
 
                         let jsonData = {
-                            userAccessToken: newAccessToken,
-                            userRefreshToken: oldRefreshToken
+                            accessToken: newAccessToken,
+                            refreshToken: oldRefreshToken
                         }
 
                         db.default.collection(this.collectionName)

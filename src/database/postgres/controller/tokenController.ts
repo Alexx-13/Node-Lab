@@ -42,7 +42,7 @@ export default class TokenControllerPostgres implements ITokenControllerPostgres
                     this.response.send(HTTPStatusCodes.BAD_REQUEST)
                 } else {
                     let jsonData = {
-                        userAccessToken: token
+                        accessToken: token
                     }
 
                     fs.writeFile('.tokens.json', 

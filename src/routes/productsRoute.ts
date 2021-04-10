@@ -1,10 +1,8 @@
 import express, { Request, Response } from 'express'
 import { ProductsModel } from '../database/mongo/models'
 import paginationHandler from '../database/mongo/pagination'
-import { RoleHandler } from '../service'
 import ProductsControllerMongo from '../database/mongo/controller/productsController'
 import ProductsControllerPostgres from '../database/postgres/controller/productsController'
-import { UserRole } from '../enum'
 const productRouter = express.Router()
 import cookieSession from 'cookie-session'
 
