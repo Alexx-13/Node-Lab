@@ -1,4 +1,7 @@
 {
+  "name": "itech-node-lab",
+  "description": "REST API",
+  "version": "1.0.0",
   "scripts": {
     "start:dev:mongo": "nodemon -- mongo",
     "start:dev:postgres": "nodemon -- postgres",
