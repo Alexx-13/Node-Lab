@@ -4,7 +4,7 @@ import { IUser } from '../../interface'
 @Entity()
 export class User implements IUser {
   @PrimaryGeneratedColumn()
-  id!: number;
+  _id!: number;
 
   @Column()
   role!: string;

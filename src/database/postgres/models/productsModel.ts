@@ -4,7 +4,7 @@ import { IProducts } from '../../interface'
 @Entity()
 export class Products implements IProducts {
   @PrimaryGeneratedColumn()
-  id!: number;
+  _id!: number;
 
   @Column()
   categoryIds!: string;

@@ -1,5 +1,5 @@
 interface ICategory {
-    id: number,
+    _id: number,
     displayName: string
 }
 
