@@ -13,7 +13,11 @@ const swaggerDocument = require('../../swagger.json')
 
 const router: Router = express.Router()
 
+<<<<<<< HEAD
 router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+=======
+router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+>>>>>>> main
 router.use("/products", productsRouter)
 router.use("/categories", categoriesRouter)
 router.use("/register", registerRouter)
