@@ -1,23 +1,28 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 import { db } from '../../../app'
+import { CategoriesGeneralController } from '../../generalController'
 
 interface ICategoriesControllerMongo {
     request: Request
     response: Response
-    includeProducts?: boolean | undefined
-    includeTop3Products?: number | undefined
     requestStr: { [queryParam: string]: string }
+    finalQuery: Object | undefined
     collectionName: string
+
+    setFindQuery()
+    getFindQuery()
+    setDetailedFindQuery()
+    getDetailedFindQuery()
+    makeDBSearch()
 }
 
 export default class CategoriesControllerMongo implements ICategoriesControllerMongo {
     readonly request: Request
     readonly response: Response
-    public includeProducts: boolean | undefined
-    public includeTop3Products: number | undefined
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'categories'
+    public finalQuery
+    public collectionName = CollectionNames.categories
     
     constructor(request, response){
         this.request = request
@@ -25,80 +30,85 @@ export default class CategoriesControllerMongo implements ICategoriesControllerM
         this.requestStr = request.query
     }       
 
-    getIncludeProducts(){
-        try {
-            if(this.requestStr.includeProducts){
-                if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
-                    this.includeProducts = true
-                } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
-                    this.includeProducts = false
-                } else {
-                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
-                }
-            }
-        } catch (err) {
-            throw new err
+    setFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
+
+        if(this.requestStr.id){
+            this.finalQuery._id = categoriesFinder.getCategoryId()
+        }
+
+        return this.finalQuery
     }
 
-    getIncludeTop3Products(){
-        try {
-            if(this.requestStr.includeTop3Products){
-                if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
-                    this.includeTop3Products = 3
-                } else {
-                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
-                } 
-            }
-        } catch (err) {
-            throw new err
+    getFindQuery(){
+        return this.setFindQuery()
+    }
+
+    setDetailedFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
+
+        if(this.requestStr.includeProducts){
+            this.finalQuery.includeProducts = categoriesFinder.getIncludeProducts()
+        }
+
+        if(this.requestStr.includeTop3Products){
+            this.finalQuery.includeTop3Products = categoriesFinder.getIncludeTop3Products()
+        }
+
+        return this.finalQuery
+    }
+
+    getDetailedFindQuery(){
+        return this.setDetailedFindQuery()
     }
 
     makeDBSearch(){
-        if(Object.keys(this.requestStr).length === 0){
-            db.default.collection(this.collectionName).find({}).toArray((err, results) => {
-                if (err) throw err
-                return this.response.send(JSON.stringify(results))
-            })
-        } else {
-        this.getIncludeProducts()
+        this.getFindQuery()
 
-            if(this.includeProducts === false || this.includeProducts === true){
-                this.getIncludeTop3Products()
+        db.default.collection(this.collectionName)
+        .find(this.getFindQuery())
+        .toArray((err, results) => {
+            if (err){
+                throw err
+            } else if(results.length === 0){
+                this.response.send(HTTPStatusCodes.NOT_FOUND);
+            } else {
+                this.getDetailedFindQuery()
 
-                if(this.includeProducts === true && this.includeTop3Products === 3){
-                    db.default.collection(this.collectionName).aggregate([
+                if(this.finalQuery.includeProducts && this.finalQuery.includeTop3Products){
+                    db.default.collection(this.collectionName)
+                    .aggregate([
                         {
                             $lookup:
                             {
-                                from: 'products',
-                                localField: 'displayName',
-                                foreignField: 'displayName',
-                                as: 'products'
+                                from: CollectionNames.products,
+                                localField: '_id',
+                                foreignField: 'categoriesIds',
+                                as: CollectionNames.products
                             }
                         }
-                    ]).toArray((err, results) => {
-                        if (err){
+                    ])
+                    .toArray((err, results) => {
+                        if (err) {
                             throw err
-                        } else if(results.length === 0){
+                        } else if (results.length === 0) {
                             this.response.send(HTTPStatusCodes.NOT_FOUND);
                         } else {
                             return this.response.send(JSON.stringify(results))
                         }
                     })
-                } else if(this.includeProducts === undefined){
-                    db.default.collection(this.collectionName).find({}).toArray((err, results) => {
-                        if (err){
-                            throw err
-                        } else if(results.length === 0){
-                            this.response.send(HTTPStatusCodes.NOT_FOUND);
-                        } else {
-                            return this.response.send(JSON.stringify(results))
-                        }
-                    })
+                } else {
+                    return this.response.send(JSON.stringify(results))
                 }
             }
-        }
+        })
     }
 }

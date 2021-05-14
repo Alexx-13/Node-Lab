@@ -1,4 +1,6 @@
 import { Response } from 'express'
+import { HTTPStatusCodes, CollectionNames, Errors } from '../../../enum'
+import { AccountGeneralController } from '../../generalController'
 import { db } from '../../../app'
 
 interface IAuthenticateControllerMongo {
@@ -6,81 +8,59 @@ interface IAuthenticateControllerMongo {
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
+    finalQuery: Object | undefined
 
-    getUserName()
-    getUserUnhashedPassword()
-    setFinalQuery()
-    getFinalQuery()
+    setFindQuery()
+    getFindQuery()
     getToken()
 }
 
 export default class AuthenticateControllerMongo implements IAuthenticateControllerMongo {
     readonly request
     readonly response
-    readonly collectionName: string = 'account'
-    public finalQuery = {
-        user_name: '',
-        user_password: ''
-    }
+    readonly collectionName: string = CollectionNames.account
+    public finalQuery
     requestStr: { [queryParam: string]: string }
 
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    getUserName() {
-        try{
-            return this.requestStr.user_field
-        } catch(err){
-            throw new err
+    setFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        let accountFinder = new AccountGeneralController(this.request, this.response)
+
+        this.finalQuery.userName = accountFinder.getUserName()
+        this.finalQuery.password = accountFinder.getPassword()
+
+        return this.finalQuery
     }
 
-    getUserUnhashedPassword() { 
-        try{
-            return this.requestStr.user_password
-        } catch(err){
-            throw new err
-        }
-    }
-
-    setFinalQuery(){
-        try{
-            return this.finalQuery = {
-                user_name: this.getUserName(),
-                user_password: this.getUserUnhashedPassword()
-            }
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getFinalQuery() {
-        try{
-            return this.setFinalQuery()
-        } catch(err){
-            throw new err
-        }
+    getFindQuery() {
+        return this.setFindQuery()
     }
 
     getToken() {
         try {
-            const { user_name, user_password } = this.getFinalQuery()
-
-            db.default.collection(this.collectionName).find({ user_name: user_name, user_password: user_password }).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .find(this.getFindQuery())
+            .toArray((err, results) => {
                 if(err){
                     throw new err
                 } else if (results.length === 0){
-                    this.response.send('Username or password incorrect')
+                    this.response.sendStatus(HTTPStatusCodes.BAD_REQUEST)
                 } else {
-                    this.response.send(results[0].user_access_token)
+                    process.argv[3] = 'true'
+                    this.response.send(results[0].accessToken)
                 }
             })
         } catch (err) {
-            throw new err
+            this.response.send(Errors.accessTokenRemote)
         }
     }
 }

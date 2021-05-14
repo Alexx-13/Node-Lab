@@ -1,88 +1,81 @@
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 import { db } from '../../../app'
+import { CategoriesGeneralController } from '../../generalController'
 
 interface ICategoriesControllerPostgres {
     request: Request
     response: Response
-    id: number
-    includeProducts?: boolean
-    includeTop3Products?: string
     requestStr: { [queryParam: string]: string }
+    finalQuery: Object | undefined
     collectionName: string
+
+    setFindQuery()
+    getFindQuery()
+    setDetailedFindQuery()
+    getDetailedFindQuery()
+    makeDBSearch()
 }
 
 export default class CategoriesControllerPostgres implements ICategoriesControllerPostgres {
     readonly request: Request
     readonly response: Response
-    public id
-    public includeProducts
-    public includeTop3Products
-    public finalQuery = `SELECT * FROM categories`
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'categories'
-
-      
+    public finalQuery
+    public collectionName = CollectionNames.categories
+    
     constructor(request, response){
         this.request = request
         this.response = response
         this.requestStr = request.query
     }      
 
-
-    getId(){
-        try{
-            this.id = this.requestStr.id
-        } catch(err){
-            throw new err
+    setFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
-    }
 
-    getIncludeProducts(){
-        try{
-            if(this.requestStr.includeProducts.toLocaleLowerCase() === 'true'){
-                this.includeProducts = true
-            } else if(this.requestStr.includeProducts.toLocaleLowerCase() === 'false'){
-                this.includeProducts = false
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-        } catch(err){
-            throw new err
+        let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
+
+        if(this.requestStr.id){
+            this.finalQuery._id = categoriesFinder.getCategoryId()
         }
-    }
 
-    getIncludeTop3Products(){
-        try{
-            if(this.requestStr.includeTop3Products.toLocaleLowerCase() === 'top'){
-                this.includeTop3Products = 3
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-        } catch(err){
-            throw new err
-        }
-    } catch(err){
-        throw new err
-    }
-
-    createFinalQuery(){
-        this.getIncludeProducts()
-        this.getIncludeTop3Products()
-        
-        if(this.includeProducts, this.includeTop3Products){
-            this.finalQuery = `${this.finalQuery} INNER JOIN products ON ${this.collectionName}.displayName = products.displayName`
-        }
-    }
-
-    getFinalQuery(){
         return this.finalQuery
     }
 
-    makeDBSearch(){
-        this.createFinalQuery()
+    getFindQuery(){
+        return this.setFindQuery()
+    }
 
-        db.default.query(this.getFinalQuery(), (err, results) => {
+    setDetailedFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
+        let categoriesFinder = new CategoriesGeneralController(this.request, this.response)
+
+        if(this.requestStr.includeProducts){
+            this.finalQuery.includeProducts = categoriesFinder.getIncludeProducts()
+        }
+
+        if(this.requestStr.includeTop3Products){
+            this.finalQuery.includeTop3Products = categoriesFinder.getIncludeTop3Products()
+        }
+
+        return this.finalQuery
+    }
+
+    getDetailedFindQuery(){
+        return this.setDetailedFindQuery()
+    }
+
+    makeDBSearch(){
+       const customQuery = `SELECT * FROM ${this.collectionName}
+       ON ${this.collectionName}._id = ${CollectionNames.products}.categoriesIds
+       `
+
+        db.default.query(customQuery, (err, results) => {
             if (err){
                 throw err
             } else if(!results.row){

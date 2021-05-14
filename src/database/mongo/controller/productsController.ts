@@ -1,32 +1,35 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express'
-import { HTTPStatusCodes } from '../../../enum'
+import { HTTPStatusCodes, CollectionNames } from '../../../enum'
 import { db, io } from '../../../app'
+import { ProductsGeneralController } from '../../generalController'
 
 interface IProductsControllerMongo {
     request: Request
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
-    dipslayName?: string | object | undefined
-    minRating?: number | object | undefined
-    price?: string | object | undefined
-    sortBy?: string | undefined
+    collectionNameRatings?: string
+    finalQuery: Object | undefined
+    sortQuery: Object | undefined
+
+    setRatingsQuery()
+    getRatingsQuery()
+    setFindQuery()
+    getFindQuery()
+    setSortQuery()
+    getSortQueryMongo()
+    makeDBSearch()
 }
 
 export default class ProductsControllerMongo implements IProductsControllerMongo {
     readonly request: Request
     readonly response: Response
     public requestStr: { [queryParam: string]: string }
-    public collectionName = 'products'
-    public collectionNameRatings = 'lastRatings'
+    public collectionName = CollectionNames.products
+    public collectionNameRatings = CollectionNames.ratings
     public finalQuery
-    public dipslayName: string | object | undefined
-    public userRating: number | undefined
-    public minRating: number | object |  undefined
-    public price: string | object | undefined
-    public sortBy: string | undefined
+    public sortQuery
 
     constructor(request, response){
         this.request = request
@@ -34,199 +37,142 @@ export default class ProductsControllerMongo implements IProductsControllerMongo
         this.requestStr = request.query
     }
 
-    getUserRating(){
-        try{
-            const rating = parseInt(this.request.params.value)
-
-            if(rating <= 10 && rating >= 1){
-                this.userRating = rating
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-        } catch(err){
-            throw new err
+    setRatingsQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
-    }
 
-    getUserRatingQuery(){
-        try{
-          return { totalRating: this.getUserRating() }
-        } catch(err){
-            throw new err
+        const productsFinder = new ProductsGeneralController(this.request, this.response)
+
+        if(this.requestStr.id && this.requestStr.rate){
+            this.finalQuery._id = productsFinder.getProductId()
+            this.finalQuery.ratings = productsFinder.getRatings()
         }
-    }
 
-    makeDBRatingUpdate(){
-        db.default.collection(this.collectionName).find(this.getUserRatingQuery()).toArray((err, results) => {
-            if (err){
-                throw err
-            } else if(results.length === 0){
-                this.response.send(HTTPStatusCodes.NOT_FOUND)
-            } else {
-                const oldData = { totalRating:  results[0].totalRating }
-                const newData = { $set: this.getUserRatingQuery() }
-
-                db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                    if (err) {
-                        throw new err
-                    } else {
-                        this.response.send(HTTPStatusCodes.OK)
-                        io.sockets.on('connection', (socket) => {
-                            console.log('WebScoket in products controller connected!');
-                          
-                            socket.emit('rating', results)
-                          
-                            socket.on('disconnect', () => {
-                              console.log('WebScoket in products controller disconnected!')
-                            })
-                        })
-
-                        db.default.collection(this.collectionNameRatings).insertOne(results, (err, results) => {
-                            if (err) {
-                                throw new err
-                            } else {
-                                this.response.send(HTTPStatusCodes.OK)
-                            }
-                        })
-                    }
-                })
-            }
-        })
-    }
-
-    getDisplayName(){
-        try{
-            this.dipslayName = this.requestStr.displayName
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getMinRating(){
-        try{
-            if(parseInt(this.requestStr.minRating)){
-                this.minRating = parseInt(this.requestStr.minRating)
-            } else {
-                this.response.send(HTTPStatusCodes.BAD_REQUEST)
-            }
-            
-        } catch(err){
-            throw new err
-        }
-    }
-
-    getPrice(){
-        try{
-            const priceStr: string = this.requestStr.price
-            let priceArr: Array<string> | Array<number> | undefined
-
-            let minPrice
-            let maxPrice
-    
-            if(priceStr){
-                priceArr = priceStr.split('')
-                if( priceArr.includes(':') && priceArr[0] !== ':' && priceArr[priceArr.length - 1] !== ':' ){
-                    if(parseInt(priceStr.split(':')[0]) && parseInt(priceStr.split(':')[1])){
-                        minPrice = parseInt(priceStr.split(':')[0])
-                        maxPrice = parseInt(priceStr.split(':')[1])
-                        this.price = { $gte : minPrice, $lte : maxPrice } 
-                    } else {
-                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                    }
-                } else if ( priceArr[0] === ':' && parseInt(priceArr[priceArr.length - 1]) || priceArr[priceArr.length - 1] === '0' ){
-                    if( parseInt(priceStr.split(':')[1])){
-                        minPrice = parseInt(priceStr.split(':')[1])
-                        this.price = { $gte : minPrice }
-                    } else {
-                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                    }
-                } else if ( parseInt(priceArr[0]) && priceArr[priceArr.length - 1] === ':' ){
-                    if(parseInt(priceStr.split(':')[0])){
-                        maxPrice = parseInt(priceStr.split(':')[0])
-                        this.price = { $lte : maxPrice }
-                    } else {
-                        this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                    }
-                } else {
-                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                }
-            }
-        } catch(err){  
-            throw new err
-        }
-    }
-
-    createSortByQuery(){
-        try{
-            if(this.requestStr.sortBy){
-                const sortByStr: number | string = this.request.query.sortBy
-                let directionSortBy
-
-                if(sortByStr.split(':')[1].toLocaleLowerCase() === 'desc'){
-                    directionSortBy = 1
-                    this.sortBy = directionSortBy
-                } else if (sortByStr.split(':')[1].toLocaleLowerCase() === 'asc'){
-                    directionSortBy = -1
-                    this.sortBy = directionSortBy
-                } else {
-                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
-                }
-            }
-        } catch(err){  
-            throw new err
-        }
-    } 
-
-    getSortByQuery(){
-        return this.sortBy
-    }
-
-    createFinalQuery(){
-        this.finalQuery = new Object()
-
-        if(this.requestStr.displayName){
-            this.getDisplayName()
-            this.finalQuery.displayName = this.dipslayName
-
-            if(this.requestStr.minRating){
-                this.getMinRating()
-                this.finalQuery.minRating = { $gt: this.minRating }
-            }
-
-            if(this.requestStr.price){
-                this.getPrice()
-                this.finalQuery.price = this.price
-            }
-        }
-    }
-
-    getFinalQuery(){
         return this.finalQuery
     }
 
+    getRatingsQuery(){
+        return this.setRatingsQuery()
+    }
+
+    setFindQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
+        let productsFinder = new ProductsGeneralController(this.request, this.response)
+
+        if(this.requestStr.displayName){
+            this.finalQuery.displayName = productsFinder.getDisplayName()
+        }
+
+        if(this.requestStr.minRating){
+            this.finalQuery.totalRating = { $gt: productsFinder.getMinRating() }
+        }
+
+        if(this.requestStr.price){
+            this.finalQuery.price = productsFinder.getPriceMongo()
+        }
+
+        return this.finalQuery
+    }
+
+    getFindQuery(){
+        return this.setFindQuery()
+    }
+
+    setSortQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
+        let productsFinder = new ProductsGeneralController(this.request, this.response)
+
+        if(this.requestStr.sortBy){
+            return this.sortQuery = productsFinder.getSortQueryMongo()
+        }
+    }
+
+    getSortQueryMongo(){
+        return this.setSortQuery()
+    }
+
     makeDBSearch(){
-        this.createFinalQuery()
-        this.createSortByQuery()
-        if(this.getSortByQuery()){
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).sort(this.getSortByQuery).toArray((err, results) => {
+        if(this.requestStr.id && this.requestStr.rate){
+            this.getRatingsQuery()
+
+            db.default.collection(this.collectionName)
+            .updateOne( // get document by id and push rating value into ratings array
+                {_id: this.finalQuery._id},
+                { $push: { ratings: this.finalQuery.ratings } },
+                ((err, results) => {
+                    if (err){
+                        throw err;
+                    } else if(results.length === 0){
+                        this.response.send(HTTPStatusCodes.NOT_FOUND)
+                    } else {
+
+                        io.sockets.on('connection', (socket) => {
+                            console.log('WebScoket in products controller connected!');
+                            
+                            socket.emit('rating', results)
+                            
+                            socket.on('disconnect', () => {
+                                console.log('WebScoket in products controller disconnected!')
+                            })
+                        })
+
+                        db.default.collection(this.collectionNameRatings)
+                        .find()
+                        .toArray((err, results) => { // get lastRatings document
+                            if (err){
+                                throw err;
+                            } else if(results.length === 0){
+                                this.response.send(HTTPStatusCodes.NOT_FOUND)
+                            } else {
+                                const currentRatingsDocument = results[0]
+                                
+                                db.default.collection(this.collectionNameRatings)
+                                .updateOne( // get lastRatings document by id and push rating value into ratings array
+                                    { _id: currentRatingsDocument._id },
+                                    { $push: { ratings: this.finalQuery.ratings } }
+                                )
+                            }
+                        })
+
+                    }
+                })
+            )
+
+            db.default.collection(this.collectionName)
+            .find({ _id: this.finalQuery._id} ) // get document by id
+            .toArray((err, results) => {
                 if (err){
                     throw err;
                 } else if(results.length === 0){
                     this.response.send(HTTPStatusCodes.NOT_FOUND)
                 } else {
-                    this.response.send(results)
-                }
-            })    
-        } else {
-            db.default.collection(this.collectionName).find(this.getFinalQuery(), { projection: { _id: 0 } }).toArray((err, results) => {
-                if (err){
-                    throw err;
-                } else if(results.length === 0){
-                    this.response.send(HTTPStatusCodes.NOT_FOUND)
-                } else {
-                    this.response.send(results)
+                    const currentProductDocument = results[0]
+                    const ratingsSum = currentProductDocument.ratings.reduce((a, b) => a + b)
+
+                    db.default.collection(this.collectionName)
+                    .updateOne( // update documents totalRating with sum of ratings
+                        { _id: currentProductDocument._id},
+                        { $set: { totalRating: ratingsSum } }
+                    )
                 }
             })
-        }  
+        }
+
+        db.default.collection(this.collectionName).find(this.getFindQuery(), { projection: { _id: 0 } }).sort(this.getSortQueryMongo()).toArray((err, results) => {
+            if (err){
+                throw err;
+            } else if(results.length === 0){
+                this.response.send(HTTPStatusCodes.NOT_FOUND)
+            } else {
+                return this.response.send(results)
+            }
+        })    
     }
 }

@@ -1,176 +1,157 @@
 import { Response } from 'express'
 import { db } from '../../../app'
-import { HTTPStatusCodes } from '../../../enum'
-import fs from 'fs'
-import util from 'util'
+import { HTTPStatusCodes, CollectionNames, Success } from '../../../enum'
+import { ProfileGeneralController, AccountGeneralController } from '../../generalController'
+import { getLocalAccessToken } from '../../../service'
 
 interface IProfileControllerMongo {
     request
     response: Response
     requestStr: { [queryParam: string]: string }
     collectionName: string
-    finalQuery
-    isAuth: boolean
+    finalQuery: Object | undefined
 
-    getLocalToken()
-    getUserName()
-    getFirstName()
-    getLastName()
-    updateAccountDataCollection()
-
-    getOldPassword()
-    getNewPassword()
-    setPasswordFinalQuery()
-    getPasswordFinalQuery()
+    setFindAccountPasswordQuery()
+    getFindAccountPasswordQuery()
     updateAccountPasswordCollection()
+    setFindAccountDataQuery()
+    getFindAccountDataQuery()
+    updateAccountDataCollection()
 }
 
 export default class ProfileControllerMongo implements IProfileControllerMongo {
     readonly request
     readonly response
-    readonly collectionName: string = 'account'
-    public finalQuery = {
-        user_password: '',
-    }
-    isAuth
+    readonly collectionName: string = CollectionNames.account
+    public finalQuery
     requestStr: { [queryParam: string]: string }
 
     constructor(request, response){
         this.request = request
         this.response = response
-        this.requestStr = this.request.body
+        this.requestStr = this.request.query
     }
 
-    async getLocalToken(){
-        try{
-            const readFileContent = util.promisify(fs.readFile)
-            const data = await readFileContent('.tokens.json').toString()
-
-            if(JSON.parse(data).USER_ACCESS_TOKEN){
-                return JSON.parse(data).USER_ACCESS_TOKEN
-            }
-
-        } catch (err) {
-            throw new err
+    setFindAccountPasswordQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
         }
+
+        let profileFinder = new ProfileGeneralController(this.request, this.response)
+
+        if(this.requestStr.oldPassword && this.requestStr.newPassword){
+            this.finalQuery.accessToken = getLocalAccessToken()
+            this.finalQuery.oldPassword = profileFinder.getPasswordQuery()
+            this.finalQuery.newPassword = profileFinder.getNewPassword()
+        }
+
+        return this.finalQuery
     }
 
-    getUserName(){
-        try {
-            return this.requestStr.user_name
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getFirstName(){
-        try {
-            return this.requestStr.user_first_name
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getLastName(){
-        try {
-            return this.requestStr.user_last_name
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getOldPassword(){
-        try {
-            return this.requestStr.user_old_password
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getNewPassword(){
-        try {
-            return this.requestStr.user_new_password
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    setPasswordFinalQuery(){
-        try {
-            return this.finalQuery.user_password = this.getNewPassword()
-        } catch (err) {
-            throw new err
-        }
-    }
-
-    getPasswordFinalQuery(){
-        try{
-            return { $set: this.setPasswordFinalQuery() }
-        } catch (err) {
-            throw new err
-        }
+    getFindAccountPasswordQuery(){
+        return this.setFindAccountPasswordQuery()
     }
 
     updateAccountPasswordCollection(){
         try {
-            if(this.isAuth){
-                const oldData = { user_password: this.getOldPassword() }
-                const newData = { $set: { user_password: this.getNewPassword() } }
+            this.getFindAccountPasswordQuery()
+            const oldData = { userPassword: this.finalQuery.oldPassword }
+            const newData = { $set: { userPassword: this.finalQuery.newPassword } }
     
-                if(this.getOldPassword() && this.getNewPassword()){
-                    db.default.collection(this.collectionName).find(oldData).toArray((err, results) => {
+            db.default.collection(this.collectionName)
+            .find(this.finalQuery.accessToken)
+            .toArray((err, results) => {
+                if(err){
+                    throw new err
+                } else if (results.length === 0) {
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                } else {
+                    db.default.collection(this.collectionName)
+                    .updateOne(oldData, newData, (err, results) => {
                         if(err){
                             throw new err
                         } else if(results.length === 0){
-                            this.response.send('Incorrect data')
+                            this.response.send(HTTPStatusCodes.BAD_REQUEST)
                         } else {
-                            db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                                if(err){
-                                    throw new err
-                                } else {
-                                    this.response.send('The password was updated')
-                                }
-                            })
+                            this.response.send(Success.passwordUpdate)
                         }
                     })
                 }
-            }
+            })
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }
     }
 
+    setFindAccountDataQuery(){
+        if(!this.finalQuery){
+            this.finalQuery = new Object()
+        }
+
+        let accountFinder = new AccountGeneralController(this.request, this.response)
+
+        if(this.requestStr.userName){
+            this.finalQuery.userName = accountFinder.getUserName()
+        }
+
+        if(this.requestStr.firstName){
+            this.finalQuery.firstName = accountFinder.getFirstName()
+        }
+
+        if(this.requestStr.lastName){
+            this.finalQuery.lastName = accountFinder.getLastName()
+        }
+
+        if(this.requestStr.password){
+            this.finalQuery.password = accountFinder.getPassword()
+        }
+
+        this.finalQuery.accessToken = getLocalAccessToken()
+
+        return this.finalQuery
+    }
+
+    getFindAccountDataQuery(){
+        return this.setFindAccountDataQuery()
+    }
+
     updateAccountDataCollection(){
         try{
-            console.log(this.isAuth)
-            if(this.getUserName() && this.getFirstName() && this.getLastName()){
-                db.default.collection(this.collectionName).find(this.getLocalToken()).toArray((err, results) => {
-                    if(err){
-                        throw new err
-                    } else if(results.length === 0){
-                        this.response.send('Incorrect data')
-                    } else {
-                        const oldData: object = {
-                            user_name: results[0].user_name,
-                            user_first_name: results[0].user_first_name,
-                            user_last_name: results[0].user_last_name
-                        }
-                        const newData: object = { 
-                            user_name: this.getUserName(),
-                            user_first_name: this.getFirstName(),
-                            user_last_name: this.getLastName()
-                        }
+            this.getFindAccountDataQuery()
 
-                        db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
-                            if(err){
-                                throw new err
-                            } else {
-                                this.response.send('Profile was successfully updated')
-                            }
-                        })
+            db.default.collection(this.collectionName)
+            .find(this.finalQuery.localToken)
+            .toArray((err, results) => {
+                if(err){
+                    throw new err
+                } else if(results.length === 0){
+                    this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                } else {
+                    const oldData: object = {
+                        userName: results[0].userName,
+                        firstName: results[0].firstName,
+                        lastName: results[0].lastName,
+                        password: results[0].password
                     }
-                })
-            }
+
+                    const newData: object = { 
+                        userName: this.finalQuery.userName,
+                        firstName: this.finalQuery.firstName,
+                        lastName: this.finalQuery.lastName,
+                        password:  this.finalQuery.password
+                    }
+
+                    db.default.collection(this.collectionName).updateOne(oldData, newData, (err, results) => {
+                        if(err){
+                            throw new err
+                        } else if (results.length === 0) {
+                            this.response.send(HTTPStatusCodes.BAD_REQUEST)
+                        } else {
+                            this.response.send(Success.accountUpdate)
+                        }
+                    })
+                }
+            })
         } catch (err) {
             this.response.send(HTTPStatusCodes.BAD_REQUEST)
         }

@@ -1,5 +1,7 @@
 import { Logger } from "mongodb";
 import { Connection, Mongoose } from "mongoose"
+import { CollectionNames } from '../../enum'
+import { getLocalAccessToken } from '../../service'
 const fs = require("fs");
 
 const mongoose: Mongoose = require('mongoose')
@@ -13,7 +15,6 @@ mongoose.connect(
 )
 
 const db: Connection = mongoose.connection
-
 
 db.on('connected', () => {
     console.log('The MongoDB was successfully connected')
@@ -29,6 +30,21 @@ db.on('connected', () => {
             })
         })
     } 
+
+    db.collection(CollectionNames.account)
+    .find({ accessToken: getLocalAccessToken()})
+    .toArray((err, results) => {
+        if(err){
+            throw err
+        } else if (results.length === 0){
+            process.argv[3] = 'false'
+        } else {
+            process.argv[3] = 'true'
+        }
+    })
+
+
+
 })
 
 db.on('disconnected', () => {

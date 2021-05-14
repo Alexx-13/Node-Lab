@@ -1,4 +1,5 @@
 import { Server } from "express"
+import { CollectionNames } from './enum'
 import { 
   logger,
   collectionCleanUpHandlerMongo, 
@@ -17,10 +18,10 @@ let db
 
 if (process.argv[2] === 'mongo'){
   db = require('./database/mongo')
-  collectionCleanUpHandlerMongo(db, 'lastRatings')
+  collectionCleanUpHandlerMongo(db, CollectionNames.ratings)
 } else if (process.argv[2] === 'postgres'){
   db = require('./database/postgres')
-  collectionCleanUpHandlerPostgres(db, 'lastRatings')
+  collectionCleanUpHandlerPostgres(db, CollectionNames.ratings)
 } else {
   console.log('DB was not selected')
 }

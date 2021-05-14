@@ -6,11 +6,6 @@ import bodyParser from 'body-parser'
 
 const runDBSearch = (DBName) => {
     if(DBName === 'mongo'){
-        authenticateRouter.get("/", 
-            express.static(process.cwd() + '/src/client/authenticate.html'),
-            bodyParser.urlencoded({ extended: false }),
-        )
-
         authenticateRouter.post("/", 
         bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
@@ -20,11 +15,6 @@ const runDBSearch = (DBName) => {
         )
 
     } else if (DBName === 'postgres'){
-        authenticateRouter.get("/",
-            express.static(process.cwd() + '/src/client/authenticate.html'),
-            bodyParser.urlencoded({ extended: false }),
-        )
-
         authenticateRouter.use("/",
             bodyParser.urlencoded({ extended: false }),
             async (request: Request, response: Response) => {
